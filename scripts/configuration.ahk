@@ -41,7 +41,7 @@ CONFIG_INITIAL := UMap(
   "misc", UMap(
     "autoStart", false,
     "reuseExistingWindow", true,
-    "singleActiveWindow", true
+    "singleActiveWindow", false
   ),
 )
 checkConfig(config) {

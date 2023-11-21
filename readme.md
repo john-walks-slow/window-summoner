@@ -1,4 +1,4 @@
-<img align="left" width="50" height="50" src="data/icon.ico">
+<img align="left" width="50" height="50" src="misc/icon_480.png">
 
 # 呼来唤去 - 一键显隐窗口
 

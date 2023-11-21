@@ -2,7 +2,7 @@
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 A_FileEncoding := "UTF-16"
-
+VERSION_NUMBER := "0.4.2"
 
 #Include scripts\configuration.ahk
 #Include scripts\utils.ahk
@@ -85,10 +85,10 @@ class Configurator {
 
   }
   _menu() {
-    VERSION_NUMBER := "0.2.1"
+    global VERSION_NUMBER
     aboutMenu := Menu()
     aboutMenu.Add("版本：" VERSION_NUMBER, (name, pos, menu) {
-      Run("https://www.github.com")
+      Run("https://github.com/john-walks-slow/window-summoner")
     },)
 
     scriptMenu := Menu()

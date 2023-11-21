@@ -72,7 +72,6 @@ toggleWnd(id, entry := unset) {
       exitHandler := (e, c) {
         try {
           WinShow(id)
-          WinActivate(id)
         }
       }
       ; Keep a record of bound exitHandlers

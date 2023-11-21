@@ -1,5 +1,6 @@
 ﻿throwError(title, e?) {
   if (!A_IsCompiled) {
+    throw e
     if (IsSet(e)) {
       MsgBox(e.Message, title)
     } else {

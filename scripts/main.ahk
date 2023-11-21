@@ -8,8 +8,10 @@ main() {
   global config
   setupDynamic(config["dynamic"])
   setupShortcuts(config["shortcuts"])
+  startTimer()
 }
 stopMain() {
   ClearHotkeys()
   clearWndHandlers()
+  stopTimer()
 }

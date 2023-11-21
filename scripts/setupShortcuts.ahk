@@ -31,24 +31,8 @@ _setupShortcut(entry) {
         }
       }
     }
-    ; If window exists, toggle it
-    if (wndId && WinExist(wndId)) {
-      toggleWnd(wndId)
-    }
-    ; Otherwise, run the program && record the wndId
-    else {
-      Run(entry["run"])
-      if (entry["wnd_title"] !== "") {
-        wndId := WinWait(entry["wnd_title"])
-      } else {
-        currentWnd := WinGetLatest()
-        while (WinGetLatest() == currentWnd) {
-          Sleep(50)
-        }
-        wndId := WinGetLatest()
-      }
-      activatedWnd := wndId
-    }
+    wndId := toggleWnd(wndId, entry)
+
     pending := false
   }
   MyHotkey(entry["hotkey"], onPress)

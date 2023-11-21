@@ -59,14 +59,14 @@ class Configurator {
       %TCS_FLATBUTTONS%: "",
       ; "Bottom": "",
       ; "Background": "White",
-    }), ["召唤", "绑定", "其它"])
+    }), ["热键", "绑定", "其它"])
 
     this.tab.UseTab(0)
     BS_FLAT := 0x8000
     btn := this.gui.AddButton(s({ x: this.guiWidth - 35, y: "s-5", }), "应用")
     btn.OnEvent(
       "Click", (gui, info) {
-        writeConfig(this.config)
+        ; writeConfig(this.config)
         if (this.isMainRunning) {
           this._stopMainScript()
             ; Sleep(100)
@@ -269,7 +269,7 @@ class Configurator {
     miscConfig := this.config["misc"]
     this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
     this._addControl(this.GUI_CLASS.CHECKBOX, "复用已经打开的程序实例", miscConfig, "reuseExistingWindow")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "召唤时隐藏其他已召唤的窗口", miscConfig, "singleActiveWindow")
+    this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
   }
   _refreshGui(opt?) {
     oldGui := this.gui
@@ -284,6 +284,7 @@ class Configurator {
   }
   isMainRunning := false
   _startMainScript() {
+    writeConfig(this.config)
     if (!this.isMainRunning) {
       main()
       this.isMainRunning := true

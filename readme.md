@@ -9,6 +9,6 @@
 - 窗口隐藏时不占用任务栏和托盘
 
 ## 下载
-
+[![](https://img.shields.io/badge/download-latest-orange.svg)](releases/latest)
 ## 截图
 <img align="left" width="300" height="300" src="misc/screenshot2.png">

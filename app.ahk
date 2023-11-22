@@ -70,6 +70,7 @@ class Configurator {
         if (this.isMainRunning) {
           this._stopMainScript()
             ; Sleep(100)
+          writeConfig(this.config)
           this._startMainScript()
         }
         MsgBox("已应用新配置")
@@ -107,6 +108,7 @@ class Configurator {
           if (this.isMainRunning) {
             this._stopMainScript()
           } else {
+            writeConfig(this.config)
             this._startMainScript()
           }
         }
@@ -276,6 +278,7 @@ class Configurator {
     this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
     this._addControl(this.GUI_CLASS.CHECKBOX, "复用已经打开的程序实例", miscConfig, "reuseExistingWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
+    this._addControl(this.GUI_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
   }
   _refreshGui(opt?) {
     oldGui := this.gui
@@ -290,7 +293,6 @@ class Configurator {
   }
   isMainRunning := false
   _startMainScript() {
-    writeConfig(this.config)
     if (!this.isMainRunning) {
       main()
       this.isMainRunning := true

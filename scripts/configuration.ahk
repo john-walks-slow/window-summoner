@@ -8,20 +8,21 @@ CONFIG_PATH := A_ScriptDir . "\data\config.json"
 
 CONFIG_SCHEME := UMap(
   "dynamic", UMap(
-    "enable", { default: true, gui_type: "checkbox", desc: "启用动态绑定" },
-    "mod_bind", { default: "#+", gui_type: "mod_select", desc: "绑定修饰键" },
-    "mod_main", { default: "#", gui_type: "mod_select", desc: "切换修饰键" },
-    "suffixs", { default: "7890", gui_type: "suffix_input", desc: "后缀" },
+    "enable", { default: true },
+    "mod_bind", { default: ["#", "+"] },
+    "mod_main", { default: ["#"] },
+    "suffixs", { default: [7, 8, 9, 0] },
   ),
   "shortcuts", Map("*", UMap(
-    "hotkey", { default: "", gui_type: "hotkey", desc: "快捷键" },
-    "run", { default: "", gui_type: "path", desc: "程序路径" },
-    "wnd_title", { default: "", gui_type: "string", desc: "窗口标题（正则）" },
+    "hotkey", { default: "" },
+    "run", { default: "" },
+    "wnd_title", { default: "" },
   )),
   "misc", UMap(
-    "autoStart", { default: false, gui_type: "checkbox", desc: "开机自启动" },
-    "reuseExistingWindow", { default: true, gui_type: "checkbox", desc: "复用已经打开的程序实例" },
-    "singleActiveWindow", { default: false, gui_type: "checkbox", desc: "单一活动窗口" },
+    "autoStart", { default: false },
+    "reuseExistingWindow", { default: true },
+    "singleActiveWindow", { default: false },
+    "minimizeInstead", { default: false },
   )
 )
 CONFIG_INITIAL := UMap(
@@ -41,21 +42,27 @@ CONFIG_INITIAL := UMap(
   "misc", UMap(
     "autoStart", false,
     "reuseExistingWindow", true,
-    "singleActiveWindow", false
+    "singleActiveWindow", false,
+    "minimizeInstead", true
   ),
 )
 checkConfig(config) {
   _checkConfigWithScheme(config["dynamic"], CONFIG_SCHEME["dynamic"])
+  _checkConfigWithScheme(config["misc"], CONFIG_SCHEME["misc"], true)
 
   for cKey, cValue in config["shortcuts"] {
     _checkConfigWithScheme(cValue, CONFIG_SCHEME["shortcuts"]["*"])
   }
 
-  _checkConfigWithScheme(config, scheme) {
+  _checkConfigWithScheme(config, scheme, merge := false) {
     for sKey, sValue in scheme {
       if (!sValue.HasProp("optional") || !sValue.optional) {
         if (!config.Has(sKey)) {
-          throwError("Invalid config")
+          if (!merge) {
+            throwError("Invalid config")
+          } else {
+            config.Set(sKey, sValue.default)
+          }
         }
       }
     }

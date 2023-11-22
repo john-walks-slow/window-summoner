@@ -30,11 +30,19 @@ toggleWnd(id, entry := unset) {
   global activatedWnd
   global lastActive
   if (id && WinExist(id)) {
-    isVisible := WinGetStyle(id) & 0x10000000
-    if (isVisible && WinActive(id)) {
-      _hide(id)
+    if (!config["misc"]["minimizeInstead"]) {
+      isVisible := WinGetStyle(id) & 0x10000000
+      if (isVisible && WinActive(id)) {
+        _hide(id)
+      } else {
+        _show(id)
+      }
     } else {
-      _show(id)
+      if (WinActive(id)) {
+        _minimize(id)
+      } else {
+        _restore(id)
+      }
     }
   }
   else if (IsSet(entry)) {
@@ -79,6 +87,7 @@ toggleWnd(id, entry := unset) {
     }
     OnExit(exitHandler, 1)
     OnError(exitHandler, 1)
+
   }
   _show(id) {
     lastlastActive := lastActive
@@ -91,8 +100,6 @@ toggleWnd(id, entry := unset) {
         lastActive := lastlastActive
       }
     }
-
-
     activatedWnd := id
     ; Remove exit handler
     if (wndHandlers.Get(String(id), false)) {
@@ -100,10 +107,26 @@ toggleWnd(id, entry := unset) {
       OnError(wndHandlers[String(id)], 0)
     }
   }
+  _minimize(id) {
+    try {
+      WinMinimize(id)
+    }
+  }
+  _restore(id) {
+    try {
+      WinRestore(id)
+      WinActivate(id)
+      if (config["misc"]["singleActiveWindow"]) {
+        if (activatedWnd && activatedWnd !== id) {
+          _minimize(activatedWnd)
+        }
+      }
+      activatedWnd := id
+    }
 
+  }
   return id
 }
-
 clearWndHandlers() {
   global wndHandlers
   global activatedWnd

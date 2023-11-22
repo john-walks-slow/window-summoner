@@ -34,7 +34,7 @@ stopTimer() {
 toggleWnd(id, entry := unset) {
   static pending := false
   if (pending) {
-    return
+    return id
   }
   pending := true
   global wndHandlers

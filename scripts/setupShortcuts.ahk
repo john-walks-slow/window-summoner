@@ -9,7 +9,6 @@ setupShortcuts(shortcutConfig) {
 }
 _setupShortcut(entry) {
   global config
-  global activatedWnd
   if (entry["hotkey"] == "") {
     return
   }

@@ -79,7 +79,10 @@ toggleWnd(id, entry := unset) {
       ; id is remembered in closure
       exitHandler := (e, c) {
         try {
-          WinShow(id)
+          isVisible := WinGetStyle(id) & 0x10000000
+          if (!isVisible) {
+            WinShow(id)
+          }
         }
       }
       ; Keep a record of bound exitHandlers

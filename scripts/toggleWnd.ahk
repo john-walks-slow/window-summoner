@@ -26,6 +26,11 @@ stopTimer() {
 
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
+  static pending := false
+  if (pending) {
+    return
+  }
+  pending := true
   global wndHandlers
   global activatedWnds
   global lastActive
@@ -150,6 +155,7 @@ toggleWnd(id, entry := unset) {
       activatedWnds := [id]
     }
   }
+  pending := false
   return id
 }
 clearWndHandlers() {

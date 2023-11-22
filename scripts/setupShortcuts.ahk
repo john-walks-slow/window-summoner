@@ -17,11 +17,7 @@ _setupShortcut(entry) {
   ; Hotkey handler
   onPress(key) {
     ; If already waiting for an action to complete, return
-    static pending := false
-    if (pending) {
-      return
-    }
-    pending := true
+
     if (config["misc"]["reuseExistingWindow"]) {
       ; If wndId invalid, try to match another existing window
       if (!(wndId && WinExist(wndId)) && entry["wnd_title"] !== "") {
@@ -32,7 +28,6 @@ _setupShortcut(entry) {
     }
     wndId := toggleWnd(wndId, entry)
 
-    pending := false
   }
   MyHotkey(entry["hotkey"], onPress)
 }

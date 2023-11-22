@@ -33,9 +33,9 @@ stopTimer() {
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
   static pending := false
-  if (pending) {
-    return id
-  }
+  ; if (pending) {
+  ;   return id
+  ; }
   pending := true
   global wndHandlers
   global activatedWnds
@@ -97,12 +97,18 @@ toggleWnd(id, entry := unset) {
       WinHide(id)
     }
     ; Restore focus
-    try {
-      if (restoreLastActive) {
-        if (activatedWnds.Length > 0) {
-          WinActivate(lastOf(activatedWnds))
+    if (restoreLastActive) {
+      try {
+        isActivated := false
+        while (activatedWnds.Length > 0) {
+          lastActivatedWnd := activatedWnds.Pop()
+          if (lastActivatedWnd && lastActivatedWnd !== id && WinExist(lastActivatedWnd)) {
+            WinActivate(lastActivatedWnd)
+            isActivated := true
+            break
+          }
         }
-        else if (lastUserWnd)
+        if (!isActivated && lastUserWnd)
           WinActivate(lastUserWnd)
       }
     }
@@ -125,6 +131,10 @@ toggleWnd(id, entry := unset) {
   }
 
   _show(id) {
+    ; If succeed, push to the end of activatedWnd
+    deleteVal(activatedWnds, id)
+    activatedWnds.Push(id)
+
     ; Update lastUserWnd
     try {
       currentWnd := WinGetID("A")
@@ -139,9 +149,7 @@ toggleWnd(id, entry := unset) {
     try {
       WinShow(id)
       WinActivate(id)
-      ; If succeed, push to the end of activatedWnd
-      deleteVal(activatedWnds, id)
-      activatedWnds.Push(id)
+
     }
   }
   _minimize(id) {
@@ -159,10 +167,10 @@ toggleWnd(id, entry := unset) {
       }
     }
     try {
+      activatedWnds := [id]
       if (WinGetMinMax(id) == -1)
         WinRestore(id)
       WinActivate(id)
-      activatedWnds := [id]
     }
   }
   pending := false

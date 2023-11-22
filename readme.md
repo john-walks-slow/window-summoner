@@ -4,12 +4,14 @@
 
 ## 功能
 
-- 一键唤起 / 隐藏窗口
-- 为常用程序定义快捷键，也可以动态绑定当前活跃窗口
-- 窗口隐藏时不占用任务栏和托盘
+- 为常用程序定义快捷键，一键唤起 / 隐藏
+- 为窗口动态绑定快捷键
+- 可选：在唤起新窗口时隐藏其他唤起的窗口
+- 可选：用最小化替代隐藏
 
 ## 下载
-> 更新时请覆盖原文件，会保留配置
+
+> 更新时请覆盖上一个版本，从而保留配置
 
 [![](https://img.shields.io/badge/download-latest-orange.svg)](https://github.com/john-walks-slow/window-summoner/releases/latest)
 

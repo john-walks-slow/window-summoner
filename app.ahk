@@ -316,8 +316,9 @@ setupTray()
 instance := Configurator()
 if (!HasVal(A_Args, "--no-gui")) {
   instance.createGui()
+} else {
+  instance._startMainScript()
 }
-instance._startMainScript()
 
 
 setupTray() {

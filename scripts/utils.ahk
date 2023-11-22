@@ -61,6 +61,10 @@ dedupe(array) {
   return deduped
 }
 
+lastOf(array) {
+  return array.Length > 0 ? array[array.Length] : 0
+}
+
 joinStrs(array, delimiter := "") {
   str := ""
   for index, value in array

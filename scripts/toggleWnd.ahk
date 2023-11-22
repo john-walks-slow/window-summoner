@@ -1,26 +1,32 @@
 ﻿#Include utils.ahk
 
+; id - onExitHandlers
 wndHandlers := Map()
-lastActive := 0
+
+; 上一个活跃的非唤起窗口
+lastUserWnd := 0
+
+; 活跃的已唤起窗口
 activatedWnds := []
 
-timerCallback() {
+; 暂时禁用了，对性能的影响待观察
+updateLastActive() {
   global activatedWnds
-  global lastActive
+  global lastUserWnd
   if (activatedWnds) {
     try {
       currentWnd := WinGetID("A")
       if (!hasVal(activatedWnds, currentWnd)) {
-        lastActive := currentWnd
+        lastUserWnd := currentWnd
       }
     }
   }
 }
 startTimer() {
-  ; SetTimer(timerCallback, 500)
+  ; SetTimer(updateLastActive, 500)
 }
 stopTimer() {
-  ; SetTimer(timerCallback, 0)
+  ; SetTimer(updateLastActive, 0)
 }
 
 
@@ -33,9 +39,12 @@ toggleWnd(id, entry := unset) {
   pending := true
   global wndHandlers
   global activatedWnds
-  global lastActive
+  global lastUserWnd
+
+  ; 存在id，且窗口存在
   if (id && WinExist(id)) {
     if (!config["misc"]["minimizeInstead"]) {
+      ; 隐藏
       isVisible := WinGetStyle(id) & 0x10000000
       if (isVisible && WinActive(id)) {
         _hide(id)
@@ -43,6 +52,7 @@ toggleWnd(id, entry := unset) {
         _show(id)
       }
     } else {
+      ; 最小化
       if (WinActive(id)) {
         _minimize(id)
       } else {
@@ -50,6 +60,7 @@ toggleWnd(id, entry := unset) {
       }
     }
   }
+  ; 不存在id，且entry存在
   else if (IsSet(entry)) {
     if (config["misc"]["singleActiveWindow"] && activatedWnds.Length > 0) {
       if (!config["misc"]["minimizeInstead"])
@@ -57,10 +68,10 @@ toggleWnd(id, entry := unset) {
       else
         _minimize(activatedWnds[1])
     }
-    _run(id, entry)
+    _run()
   }
-  _run(id, entry) {
 
+  _run() {
     Run(entry["run"])
     if (entry["wnd_title"] !== "") {
       id := WinWait(entry["wnd_title"])
@@ -73,17 +84,18 @@ toggleWnd(id, entry := unset) {
     }
     activatedWnds.push(id)
   }
+
   _hide(id, restoreLastActive := true) {
     try {
-      WinHide(id)
       deleteVal(activatedWnds, id)
+      WinHide(id)
       try {
         if (restoreLastActive) {
           if (activatedWnds.Length > 0) {
-            WinActivate(activatedWnds[1])
+            WinActivate(lastOf(activatedWnds))
           }
-          else if (lastActive)
-            WinActivate(lastActive)
+          else if (lastUserWnd)
+            WinActivate(lastUserWnd)
         }
       }
 
@@ -112,7 +124,7 @@ toggleWnd(id, entry := unset) {
       try {
         currentWnd := WinGetID("A")
         if (!hasVal(activatedWnds, currentWnd)) {
-          lastActive := currentWnd
+          lastUserWnd := currentWnd
         }
       }
       if (config["misc"]["singleActiveWindow"] && activatedWnds.Length > 0 && activatedWnds[1] !== id) {
@@ -120,31 +132,27 @@ toggleWnd(id, entry := unset) {
       }
       WinShow(id)
       WinActivate(id)
-
-      pushDedupe(activatedWnds, id)
       ; Remove exit handler
       if (wndHandlers.Get(String(id), false)) {
         OnExit(wndHandlers[String(id)], 0)
         OnError(wndHandlers[String(id)], 0)
       }
+      deleteVal(activatedWnds, id)
+      activatedWnds.Push(id)
     }
   }
   _minimize(id) {
     try {
+      deleteVal(activatedWnds, id)
       WinMinimize(id)
-      if (config["misc"]["singleActiveWindow"]) {
-        deleteVal(activatedWnds, id)
-      }
     }
   }
   _restore(id) {
     try {
       ; lastActive := WinGetID("A")
       if (config["misc"]["singleActiveWindow"]) {
-        if (activatedWnds.Has(1)) {
-          if (activatedWnds[1] !== id) {
-            _minimize(activatedWnds[1])
-          }
+        if (activatedWnds.Has(1) && activatedWnds[1] !== id) {
+          _minimize(activatedWnds[1])
         }
       }
     }
@@ -161,9 +169,9 @@ toggleWnd(id, entry := unset) {
 clearWndHandlers() {
   global wndHandlers
   global activatedWnds
-  global lastActive
+  global lastUserWnd
   activatedWnds := []
-  lastActive := 0
+  lastUserWnd := 0
   for id, handler in wndHandlers {
     try {
       handler("", "")

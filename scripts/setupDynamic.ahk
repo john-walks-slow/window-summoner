@@ -15,7 +15,9 @@ _setupDynamicBinding(key, dynamicConfig) {
   bindShortcut := joinStrs(dynamicConfig["mod_bind"]) . key
   id := false
   MyHotkey(bindShortcut, (key) {
-    id := WinGetID("A")
+    try {
+      id := WinGetID("A")
+    }
   })
   MyHotkey(mainShortcut, (key) {
     if (id && WinExist(id)) {

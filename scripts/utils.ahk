@@ -82,7 +82,11 @@ s(style) {
 WinGetLatest() {
   ; list := WinGetList("")
   ; return list.Length ? list[list.Length] : 0
-  return WinGetID("A")
+  try {
+    return WinGetID("A")
+  } catch Error as e {
+    return 0
+  }
 }
 
 usedKeys := []

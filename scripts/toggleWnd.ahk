@@ -85,7 +85,9 @@ toggleWnd(id, entry := unset) {
       id := WinGetLatest()
     }
     ; Update activatedWnds
-    activatedWnds.push(id)
+    if (id) {
+      activatedWnds.push(id)
+    }
   }
 
   _hide(id, restoreLastActive := true) {

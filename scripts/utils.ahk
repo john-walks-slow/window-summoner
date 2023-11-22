@@ -1,11 +1,16 @@
 ﻿throwError(title, e?) {
   if (!A_IsCompiled) {
-    throw e
     if (IsSet(e)) {
-      MsgBox(e.Message, title)
+      throw e
     } else {
       MsgBox(title, "Unexpected Error")
     }
+  } else {
+    ; if (IsSet(e)) {
+    ;   MsgBox(e.Message, title)
+    ; } else {
+    ;   MsgBox(title, "Unexpected Error")
+    ; }
   }
   ; ExitApp()
 }

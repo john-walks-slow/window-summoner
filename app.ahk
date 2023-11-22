@@ -119,10 +119,15 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     dynamicConfig := this.config["dynamic"]
     this._addControl(this.GUI_CLASS.CHECKBOX, '启用动态绑定', dynamicConfig, "enable", "section xs ys")
-
+    this._addControl(this.GUI_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
+      MsgBox(
+        "例：在浏览文档时按 Win + Shift + 7，之后 Win + 7 就会显示/隐藏文档。`n"
+        "后缀键列表指定了哪些字符可以用作后缀键。"
+        , "帮助")
+    })
     this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（绑定）", dynamicConfig, "mod_bind")
     this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（切换）", dynamicConfig, "mod_main")
-    this._addControl(this.GUI_CLASS.SUFFIX_INPUT, "后缀列表", dynamicConfig, "suffixs")
+    this._addControl(this.GUI_CLASS.SUFFIX_INPUT, "后缀键列表", dynamicConfig, "suffixs")
 
     this.gui.AddGroupBox(s({ section: "", w: this.guiWidth - 20, r: 2.5, x: 10, y: "+1" }))
     this.gui.AddText("section xs+5 ys+15 w270 c444444", "[绑定+后缀]: 绑定该后缀到当前活动窗口。`n[切换+后缀]: 显示/隐藏绑定的窗口。")
@@ -226,13 +231,14 @@ class Configurator {
     }
     switch guiType {
       case this.GUI_CLASS.LINK:
-        this.gui.AddLink(styleOpt || "ys", payload)
+        return this.gui.AddLink(styleOpt || "ys", "<a>" payload "</a>")
       case this.GUI_CLASS.CHECKBOX:
         checkbox := this.gui.AddCheckbox(styleOpt || "section xs y+10", payload)
         checkbox.Value := dataValue
         checkbox.OnEvent("Click", (gui, info) {
           data[dataKey] := gui.Value
         })
+        return checkbox
       case this.GUI_CLASS.MOD_SELECT:
         this.gui.AddText(styleOpt || "section xs y+10", payload)
         modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")

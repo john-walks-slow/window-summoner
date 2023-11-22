@@ -31,32 +31,25 @@ RegExMatchAll(str, regex, isGroup := true) {
 }
 
 
-IndexOf(array, val) {
-  for index, value in array
-    if (value == val)
-      return index
-  return 0
+hasVal(array, val) {
+  return array.IndexOf(val) ? 1 : 0
 }
 
-HasVal(array, val) {
-  return IndexOf(array, val) ? 1 : 0
-}
-
-removeVal(array, val) {
-  loc := IndexOf(array, val)
+deleteVal(array, val) {
+  loc := array.IndexOf(val)
   if (loc)
     array.RemoveAt(loc)
   return array
 }
 
 pushDedupe(array, val) {
-  if (!HasVal(array, val))
+  if (!hasVal(array, val))
     array.Push(val)
   return array
 }
 
 insertDedupe(array, val) {
-  if (!HasVal(array, val))
+  if (!hasVal(array, val))
     array.InsertAt(0, val)
   return array
 }

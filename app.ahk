@@ -252,12 +252,12 @@ class Configurator {
         addMod(modKey, modText, isFirst) {
           option := isFirst ? "ys x+15" : "ys"
           checkbox := this.gui.AddCheckbox(option, modText)
-          checkbox.Value := HasVal(dataValue, modKey)
+          checkbox.Value := hasVal(dataValue, modKey)
           checkbox.OnEvent("Click", (gui, info) {
             if (gui.Value) {
               pushDedupe(dataValue, modKey)
             } else {
-              removeVal(dataValue, modKey)
+              deleteVal(dataValue, modKey)
             }
           })
         }
@@ -314,11 +314,11 @@ class Configurator {
 
 setupTray()
 instance := Configurator()
-if (!HasVal(A_Args, "--no-gui")) {
+if (!hasVal(A_Args, "--no-gui")) {
   instance.createGui()
 } else {
-  instance._startMainScript()
 }
+instance._startMainScript()
 
 
 setupTray() {

@@ -2,7 +2,7 @@
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 A_FileEncoding := "UTF-16"
-VERSION_NUMBER := "0.4.2"
+VERSION_NUMBER := FileRead(A_ScriptDir "\data\version.txt", "utf-8")
 
 #Include scripts\configuration.ahk
 #Include scripts\utils.ahk

@@ -1,6 +1,7 @@
 @REM encoding = gb2312
-@REM Set version number from arg
-set version=%1
+@REM Read version from version.txt
+for /f "delims=" %%a in (data\version.txt) do set version=%%a
+
 @REM Create version directory in release
 rm release\%version% -rf
 mkdir release\%version%

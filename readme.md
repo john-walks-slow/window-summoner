@@ -9,6 +9,10 @@
 - 窗口隐藏时不占用任务栏和托盘
 
 ## 下载
+> 更新时请覆盖原文件，会保留配置
+
 [![](https://img.shields.io/badge/download-latest-orange.svg)](https://github.com/john-walks-slow/window-summoner/releases/latest)
+
+
 ## 截图
 <img align="left" width="300" height="300" src="misc/screenshot2.png">

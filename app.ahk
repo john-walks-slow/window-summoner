@@ -276,7 +276,7 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "复用已经打开的程序实例", miscConfig, "reuseExistingWindow")
+    this._addControl(this.GUI_CLASS.CHECKBOX, "优先使用已经打开的程序实例", miscConfig, "reuseExistingWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
   }

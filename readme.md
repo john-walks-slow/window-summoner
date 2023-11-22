@@ -11,7 +11,7 @@
 
 ## 下载
 
-> 更新时请覆盖上一个版本，从而保留配置
+> 更新时请覆盖上一个版本，配置会保留
 
 [![](https://img.shields.io/badge/download-latest-orange.svg)](https://github.com/john-walks-slow/window-summoner/releases/latest)
 

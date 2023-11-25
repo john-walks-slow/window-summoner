@@ -103,7 +103,7 @@ _createAutoStart() {
   global ICON_PATH
   global AUTOSTART_PATH
   if (!FileExist(AUTOSTART_PATH)) {
-    FileCreateShortcut(A_ScriptFullPath, AUTOSTART_PATH, , , "呼来唤去自启", ICON_PATH)
+    FileCreateShortcut(A_ScriptFullPath, AUTOSTART_PATH, , "--no-gui", "呼来唤去自启", ICON_PATH)
     ; Create symlink of script in the startup folder
     ; command := concat(A_ComSpec, "/c",
     ;   quote(concat("mklink", "/H", quote(AUTOSTART_PATH), quote(A_ScriptFullPath)))

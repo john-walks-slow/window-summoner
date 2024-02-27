@@ -1,6 +1,7 @@
 ﻿#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
+SetTitleMatchMode("Fast")
 A_FileEncoding := "UTF-16"
 VERSION_NUMBER := FileRead(A_ScriptDir "\data\version.txt", "utf-8")
 
@@ -53,10 +54,7 @@ class Configurator {
     TCS_FLATBUTTONS := 0x0008
     this.tab := this.gui.AddTab2(s({
       w: this.guiWidth,
-      h: 19,
-      %TCS_HOTTRACK%: "",
-      %TCS_BUTTONS%: "",
-      %TCS_FLATBUTTONS%: "",
+      h: 19, %TCS_HOTTRACK%: "", %TCS_BUTTONS%: "", %TCS_FLATBUTTONS%: "",
       ; "Bottom": "",
       ; "Background": "White",
     }), ["热键", "绑定", "其它"])
@@ -83,7 +81,6 @@ class Configurator {
     ; )
     this.gui.AddText("section y+-30", "")
     this.gui.MarginY := 0
-
   }
   _menu() {
     global VERSION_NUMBER
@@ -161,7 +158,7 @@ class Configurator {
 
     this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题（可选）" '<a href="/">?</a>').OnEvent(
       "Click", (*) {
-        MsgBox("提高稳定性，帮助 ⌈呼来唤去⌋ 捕捉打开的窗口。`n"
+        MsgBox("帮助 ⌈呼来唤去⌋ 捕捉程序窗口。`n"
           "可填写正则表达式，或窗口标题的部分内容。"
           , "帮助")
       }
@@ -276,7 +273,7 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "优先使用已经打开的程序实例", miscConfig, "reuseExistingWindow")
+    this._addControl(this.GUI_CLASS.CHECKBOX, "优先使用已经启动的程序实例", miscConfig, "reuseExistingWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
   }
@@ -348,7 +345,7 @@ setupTray() {
       openGui()
       return
     }
-      ; user right-clicked tray icon
+    ; user right-clicked tray icon
     if (lParam = 0x204) {
       return
     }

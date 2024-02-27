@@ -1,34 +1,11 @@
 ﻿#Include utils.ahk
+#Include ../app.ahk
 
 ; id - onExitHandlers
 wndHandlers := Map()
 
-; 上一个活跃的非唤起窗口
-lastUserWnd := 0
-
 ; 活跃的已唤起窗口
-activatedWnds := []
-
-; 暂时禁用，对性能的影响待观察
-updateLastActive() {
-  global activatedWnds
-  global lastUserWnd
-  if (activatedWnds) {
-    try {
-      currentWnd := WinGetID("A")
-      if (!hasVal(activatedWnds, currentWnd)) {
-        lastUserWnd := currentWnd
-      }
-    }
-  }
-}
-startTimer() {
-  ; SetTimer(updateLastActive, 500)
-}
-stopTimer() {
-  ; SetTimer(updateLastActive, 0)
-}
-
+activatedWnd := unset
 
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
@@ -38,8 +15,8 @@ toggleWnd(id, entry := unset) {
   ; }
   pending := true
   global wndHandlers
-  global activatedWnds
-  global lastUserWnd
+  global activatedWnd
+  global config
 
   ; Id valid
   if (id && WinExist(id)) {
@@ -62,12 +39,11 @@ toggleWnd(id, entry := unset) {
   }
   ; Id invalid & entry provided
   else if (IsSet(entry)) {
-    if (config["misc"]["singleActiveWindow"] && activatedWnds.Length > 0) {
+    if (config["misc"]["singleActiveWindow"] && activatedWnd) {
       if (!config["misc"]["minimizeInstead"])
-        ; 默认 activatedWnds 长度为1
-        _hide(activatedWnds[1], false)
+        _hide(activatedWnd, false)
       else
-        _minimize(activatedWnds[1])
+        _minimize(activatedWnd)
     }
     _run()
   }
@@ -80,36 +56,30 @@ toggleWnd(id, entry := unset) {
     } else {
       currentWnd := WinGetLatest()
       while (WinGetLatest() == currentWnd) {
-        Sleep(50)
+        Sleep(35)
       }
       id := WinGetLatest()
     }
-    ; Update activatedWnds
+    ; Update activatedWnd
     if (id) {
-      activatedWnds.push(id)
+      activatedWnd := id
     }
   }
 
   _hide(id, restoreLastActive := true) {
-    ; Delete from activatedWnds anyway
-    deleteVal(activatedWnds, id)
     try {
+      ; WinMinimize(id)
       WinHide(id)
+      activatedWnd := unset
     }
     ; Restore focus
     if (restoreLastActive) {
       try {
-        isActivated := false
-        while (activatedWnds.Length > 0) {
-          lastActivatedWnd := activatedWnds.Pop()
-          if (lastActivatedWnd && lastActivatedWnd !== id && WinExist(lastActivatedWnd)) {
-            WinActivate(lastActivatedWnd)
-            isActivated := true
-            break
-          }
-        }
-        if (!isActivated && lastUserWnd)
-          WinActivate(lastUserWnd)
+        DetectHiddenWindows(false)
+        wndList := WinGetList()
+        topWnd := wndList[wndList.FindIndex((wnd) => WinGetMinMax(wnd) > -1) + 1]
+        WinActivate(topWnd)
+        DetectHiddenWindows(true)
       }
     }
     ; Handle exit, try to reuse handler
@@ -131,46 +101,34 @@ toggleWnd(id, entry := unset) {
   }
 
   _show(id) {
-    ; If succeed, push to the end of activatedWnd
-    deleteVal(activatedWnds, id)
-    activatedWnds.Push(id)
-
-    ; Update lastUserWnd
-    try {
-      currentWnd := WinGetID("A")
-      if (!hasVal(activatedWnds, currentWnd)) {
-        lastUserWnd := currentWnd
-      }
-    }
     ; Hide other active windows
-    if (config["misc"]["singleActiveWindow"] && activatedWnds.Length > 0 && activatedWnds[1] !== id) {
-      _hide(activatedWnds[1], false)
+    if (config["misc"]["singleActiveWindow"] && activatedWnd && activatedWnd !== id) {
+      _hide(activatedWnd, false)
     }
     try {
       WinShow(id)
       WinActivate(id)
-
+      activatedWnd := id
     }
   }
   _minimize(id) {
     try {
-      deleteVal(activatedWnds, id)
       WinMinimize(id)
     }
   }
   _restore(id) {
     try {
       if (config["misc"]["singleActiveWindow"]) {
-        if (activatedWnds.Has(1) && activatedWnds[1] !== id) {
-          _minimize(activatedWnds[1])
+        if (activatedWnd && activatedWnd !== id) {
+          _minimize(activatedWnd)
         }
       }
     }
     try {
-      activatedWnds := [id]
       if (WinGetMinMax(id) == -1)
         WinRestore(id)
       WinActivate(id)
+      activatedWnd := id
     }
   }
   pending := false
@@ -178,10 +136,8 @@ toggleWnd(id, entry := unset) {
 }
 clearWndHandlers() {
   global wndHandlers
-  global activatedWnds
-  global lastUserWnd
-  activatedWnds := []
-  lastUserWnd := 0
+  global activatedWnd
+  activatedWnd := unset
   for id, handler in wndHandlers {
     try {
       OnExit(handler, 0)

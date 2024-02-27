@@ -5,14 +5,15 @@
 wndHandlers := Map()
 
 ; 活跃的已唤起窗口
-activatedWnd := unset
+activatedWnd := false
 
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
   static pending := false
-  ; if (pending) {
-  ;   return id
-  ; }
+  ; Prevent concurrent actions only if singleActiveWindow is on
+  if (config["misc"]["singleActiveWindow"] && pending) {
+    return id
+  }
   pending := true
   global wndHandlers
   global activatedWnd
@@ -70,7 +71,7 @@ toggleWnd(id, entry := unset) {
     try {
       ; WinMinimize(id)
       WinHide(id)
-      activatedWnd := unset
+      activatedWnd := false
     }
     ; Restore focus
     if (restoreLastActive) {
@@ -114,6 +115,7 @@ toggleWnd(id, entry := unset) {
   _minimize(id) {
     try {
       WinMinimize(id)
+      activatedWnd := false
     }
   }
   _restore(id) {
@@ -127,7 +129,7 @@ toggleWnd(id, entry := unset) {
     try {
       if (WinGetMinMax(id) == -1)
         WinRestore(id)
-      WinActivate(id)
+      ; WinActivate(id)
       activatedWnd := id
     }
   }
@@ -137,7 +139,7 @@ toggleWnd(id, entry := unset) {
 clearWndHandlers() {
   global wndHandlers
   global activatedWnd
-  activatedWnd := unset
+  activatedWnd := false
   for id, handler in wndHandlers {
     try {
       OnExit(handler, 0)

@@ -78,9 +78,11 @@ toggleWnd(id, entry := unset) {
       try {
         DetectHiddenWindows(false)
         wndList := WinGetList()
-        topWnd := wndList[wndList.FindIndex((wnd) => WinGetMinMax(wnd) > -1) + 1]
-        WinActivate(topWnd)
         DetectHiddenWindows(true)
+        wndIndex := wndList.FindIndex((wnd) => WinGetMinMax(wnd) > -1, 2)
+        if (wndIndex !== 0) {
+          WinActivate(wndList[wndIndex])
+        }
       }
     }
     ; Handle exit, try to reuse handler
@@ -129,7 +131,7 @@ toggleWnd(id, entry := unset) {
     try {
       if (WinGetMinMax(id) == -1)
         WinRestore(id)
-      ; WinActivate(id)
+      WinActivate(id)
       activatedWnd := id
     }
   }

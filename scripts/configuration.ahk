@@ -8,7 +8,7 @@ CONFIG_PATH := A_ScriptDir . "\data\config.json"
 
 CONFIG_SCHEME := UMap(
   "dynamic", UMap(
-    "enable", { default: true },
+    "enable", { default: false },
     "mod_bind", { default: ["#", "+"] },
     "mod_main", { default: ["#"] },
     "suffixs", { default: [7, 8, 9, 0] },
@@ -27,7 +27,7 @@ CONFIG_SCHEME := UMap(
 )
 CONFIG_INITIAL := UMap(
   "dynamic", UMap(
-    "enable", true,
+    "enable", false,
     "mod_bind", ["#", "+"],
     "mod_main", ["#"],
     "suffixs", [7, 8, 9, 0],

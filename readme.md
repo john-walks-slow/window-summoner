@@ -18,4 +18,4 @@
 
 
 ## 截图
-<img align="left" width="300" height="300" src="misc/screenshot3.png">
+<img align="left" width="400" src="misc/screenshot3.png">

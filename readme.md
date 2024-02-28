@@ -6,6 +6,7 @@
 
 - 为常用程序定义快捷键，一键唤起 / 隐藏
 - 为窗口动态绑定快捷键
+- 支持开机自启并最小化到托盘
 - 可选：在唤起新窗口时隐藏其他唤起的窗口
 - 可选：用最小化替代隐藏
 
@@ -17,4 +18,4 @@
 
 
 ## 截图
-<img align="left" width="300" height="300" src="misc/screenshot2.png">
+<img align="left" width="300" height="300" src="misc/screenshot3.png">

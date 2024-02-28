@@ -36,10 +36,10 @@ class Configurator {
     })
   }
   _skeleton() {
-    this.guiWidth := 350
+    this.guiWidth := 450
     this.guiHeight := 300
     guiSizeOpt := "MinSize" . this.guiWidth + 10 . "x" . this.guiHeight + 5
-      . " MaxSize" . this.guiWidth + 10 . "x" . this.guiHeight + 5
+      . " MaxSize" . this.guiWidth + 10 . "x" . 9999
     ; Set gui Icon
     WS_MAXIMIZEBOX := 0x00010000
     WS_VSCROLL := 0x00200000
@@ -150,12 +150,12 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     shortcutConfig := this.config["shortcuts"]
     c1 := 10
-    c2 := 95
-    c3 := 170
-    c4 := 330
-    w1 := c2 - c1 - 10
-    w2 := c3 - c2 - 10
-    w3 := c4 - c3 - 10
+    c2 := this.guiWidth * 0.3
+    c3 := this.guiWidth * 0.65
+    c4 := this.guiWidth - 20
+    w1 := c2 - c1 - 7
+    w2 := c3 - c2 - 7
+    w3 := c4 - c3 - 7
     w4 := 20
     /** Headers */
     this.gui.SetFont("c787878")
@@ -176,7 +176,7 @@ class Configurator {
       }
     )
 
-    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则（可选） " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则 (可选) " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox("若省略，『呼来唤去』会自动捕捉启动程序后出现的第一个新窗口`n`n"
           "在以下情况下本选项会有帮助：`n"

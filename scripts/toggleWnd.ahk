@@ -52,11 +52,17 @@ toggleWnd(id, entry := unset) {
   _run() {
     Run(entry["run"])
     ; Retrieve id
-    if (entry["wnd_title"] !== "") {
+    if (entry["wnd_title"] !== "" && config["misc"]["reuseExistingWindow"]) {
       id := WinWait(entry["wnd_title"])
     } else {
       currentWnd := WinGetID("A")
-      while (WinGetID("A") == currentWnd) {
+      while (true) {
+        newWnd := WinGetID("A")
+        if (newWnd != currentWnd) {
+          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+            break
+          }
+        }
         Sleep(35)
       }
       id := WinGetID("A")

@@ -16,7 +16,18 @@ _setupDynamicBinding(key, dynamicConfig) {
   id := false
   MyHotkey(bindShortcut, (key) {
     try {
+      oldId := id
       id := WinGetID("A")
+    }
+    global wndHandlers
+    if (oldId && wndHandlers.Has(String(oldId))) {
+      handler := wndHandlers.Get(String(oldId))
+      try {
+        OnExit(handler, 0)
+        OnError(handler, 0)
+        handler("", "")
+        WinActivate(id)
+      }
     }
   })
   MyHotkey(mainShortcut, (key) {

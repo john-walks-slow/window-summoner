@@ -79,16 +79,6 @@ s(style) {
   return SubStr(str, 1, -1)
 }
 
-WinGetLatest() {
-  ; list := WinGetList("")
-  ; return list.Length ? list[list.Length] : 0
-  try {
-    return WinGetID("A")
-  } catch Error as e {
-    return 0
-  }
-}
-
 usedKeys := []
 MyHotkey(key, callback, opt?) {
   global usedKeys
@@ -106,8 +96,3 @@ ClearHotkeys() {
     Hotkey(key, "Off")
   usedKeys := []
 }
-
-quote(s) => Chr(34) . s . Chr(34)
-
-
-concat(i*) => i.join(" ")

@@ -55,11 +55,11 @@ toggleWnd(id, entry := unset) {
     if (entry["wnd_title"] !== "") {
       id := WinWait(entry["wnd_title"])
     } else {
-      currentWnd := WinGetLatest()
-      while (WinGetLatest() == currentWnd) {
+      currentWnd := WinGetID("A")
+      while (WinGetID("A") == currentWnd) {
         Sleep(35)
       }
-      id := WinGetLatest()
+      id := WinGetID("A")
     }
     ; Update activatedWnd
     if (id) {

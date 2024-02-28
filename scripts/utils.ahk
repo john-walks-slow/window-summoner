@@ -96,3 +96,27 @@ ClearHotkeys() {
     Hotkey(key, "Off")
   usedKeys := []
 }
+
+; Format hotkey shorthand to readable string
+FormatHotkeyShorthand(hotkey) {
+  static modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
+  return StrSplit(hotkey).Map(v => modDict.Get(v, StrUpper(v))).Join("+")
+}
+
+; Parse hotkey shorthand to object
+ParseHotkeyShorthand(shorthand) {
+  static modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
+  hotkeyObj := { mods: [], key: "" }
+  for (c in StrSplit(shorthand)) {
+    if (modDict.Has(c))
+      hotkeyObj.mods.Push(c)
+    else
+      hotkeyObj.key := c
+  }
+  return hotkeyObj
+}
+
+; Convert hotkey object to shorthand
+ToShorthand(hotkeyObj) {
+  return hotkeyObj.mods.Join("") . hotkeyObj.key
+}

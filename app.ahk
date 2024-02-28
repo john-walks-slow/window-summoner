@@ -178,10 +178,10 @@ class Configurator {
 
     this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则 (可选) " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
-        MsgBox("若省略，『呼来唤去』会自动捕捉启动程序后出现的第一个新窗口`n`n"
+        MsgBox("省略时，『呼来唤去』会自动捕获启动程序后出现的第一个新窗口`n`n"
           "在以下情况下本选项会有帮助：`n"
           "- 该程序有启动画面或需要忽略的弹窗`n"
-          "- 希望捕捉并非由『呼来唤去』启动的程序窗口`n"
+          "- 希望捕获并非由『呼来唤去』启动的程序窗口`n"
           "- 需要提高稳定性`n"
           , "帮助")
       }
@@ -336,12 +336,12 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获从别处启动的程序实例", miscConfig, "reuseExistingWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获已经启动的程序窗口", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "根据『窗口标题正则』，尝试在现有窗口中捕获目标程序。`n"
-          "若取消勾选，『呼来唤去』只会捕获由自己启动的程序窗口。`n"
+          "勾选后，会根据『窗口标题正则』在现有窗口中尝试捕获目标窗口。`n"
+          "若取消勾选，将仅仅捕获由『呼来唤去』启动的程序窗口。`n"
           , "帮助")
       }
     )

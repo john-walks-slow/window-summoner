@@ -387,6 +387,9 @@ setupTray() {
   }
 
   A_TrayMenu.Add("配置", openGui)
+  A_TrayMenu.Add("还原窗口", (*) {
+    clearWndHandlers()
+  })
   A_TrayMenu.Add("退出", (*) {
     ExitApp()
   })

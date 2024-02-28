@@ -151,7 +151,7 @@ class Configurator {
     shortcutConfig := this.config["shortcuts"]
     c1 := 10
     c2 := this.guiWidth * 0.3
-    c3 := this.guiWidth * 0.65
+    c3 := this.guiWidth * 0.62
     c4 := this.guiWidth - 20
     w1 := c2 - c1 - 7
     w2 := c3 - c2 - 7

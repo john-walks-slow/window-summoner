@@ -26,6 +26,10 @@ class Configurator {
     this.gui.OnEvent("Close", (*) {
       this.gui.Destroy()
       this.gui := unset
+      for gui in this.subGuis {
+        gui.Destroy()
+      }
+      this.subGuis := []
       if (!this.isMainRunning) {
         ExitApp()
       }
@@ -47,6 +51,8 @@ class Configurator {
       , "呼来唤去",)
     this.gui.MarginX := 2
     this.gui.MarginY := 5
+
+    this.subGuis := []
 
     TCS_BUTTONS := 0x0100
     TCS_OWNERDRAWFIXED := 0x2000
@@ -117,20 +123,22 @@ class Configurator {
     this.tab.UseTab(2)
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     dynamicConfig := this.config["dynamic"]
-    this._addControl(this.GUI_CLASS.CHECKBOX, '启用动态绑定', dynamicConfig, "enable", "section xs ys")
-    this._addControl(this.GUI_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用动态绑定', dynamicConfig, "enable", "section xs ys")
+    this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
       MsgBox(
         "即时绑定需要控制的窗口。`n"
         "例：在浏览文档时按 Win + Shift + 7，之后 Win + 7 就会显示/隐藏文档。`n"
         , "帮助")
     })
-    this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（绑定）", dynamicConfig, "mod_bind")
-    this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（切换）", dynamicConfig, "mod_main")
-    this._addControl(this.GUI_CLASS.SUFFIX_INPUT, "后缀键列表", dynamicConfig, "suffixs")
+    this.gui.AddText("section xs y+10", "修饰键（绑定）  ")
+    this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_bind")
+    this.gui.AddText("section xs y+10", "修饰键（切换）  ")
+    this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_main")
+    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", dynamicConfig, "suffixs")
     this.gui.AddLink(s({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "后缀键列表指定了哪些字符可以用作后缀键。`n"
+          "可以用作后缀键的字符。`n"
           , "帮助")
       }
     )
@@ -199,21 +207,48 @@ class Configurator {
       appSelectTxt() {
         RegExMatch(entry["run"], "([^\\]+?)(\.[^.]*)?$", &match)
         ; this.gui.AddText(s({ section: "", x: "s", y: isFirst ? "s" : "+10" }), match[1])
-        return match ? match[1] : "选择"
+        return match ? match[1] : false
       }
-      appSelect := this.gui.AddButton(s({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt())
+      appSelect := this.gui.AddButton(s({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt() || "选择")
       appSelect.OnEvent(
         "Click", (gui, info) {
           fileChoice := FileSelect(32)
           if (fileChoice) {
             entry["run"] := fileChoice
-            gui.Text := appSelectTxt()
+            gui.Text := appSelectTxt() || "选择"
           }
         }
       )
-      hotkeyInput := this.gui.AddEdit(s({ x: c2, y: "s+2", w: w2, r: 1, "-wrap -VScroll": "" }), entry["hotkey"])
-      hotkeyInput.onEvent("Change", (gui, info) {
-        entry["hotkey"] := gui.Value
+      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), FormatHotkeyShorthand(entry["hotkey"]))
+      hotkeyButton.onEvent("Click", (target, info) {
+        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
+        this.subGuis.Push(customHotkeyWnd)
+        customHotkeyWnd.MarginX := 10
+        customHotkeyWnd.MarginY := 10
+        hotkeyObj := ParseHotkeyShorthand(entry["hotkey"])
+        customHotkeyWnd.AddText("section y+10 w0 h0", "")
+        this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
+        customHotkeyWnd.AddEdit(s({ x: "+2", y: "s-3", w: 20 }), StrUpper(hotkeyObj.key)).OnEvent("Change", (target, info) {
+          static oldVal := ""
+          splited := StrSplit(target.Value)
+          if (splited.Length > 0) {
+            key := StrLower(splited.Get(splited.FindIndex(v => v != oldVal) || 1))
+          } else {
+            key := ""
+          }
+          hotkeyObj["key"] := key
+          target.Value := StrUpper(key)
+          oldVal := target.Value
+        })
+        customHotkeyWnd.AddButton(s({ x: "s" }), "应用").OnEvent("Click", (gui, info) {
+          entry["hotkey"] := ToShorthand(hotkeyObj)
+          hotkeyButton.Text := FormatHotkeyShorthand(entry["hotkey"])
+          customHotkeyWnd.Destroy()
+        })
+        customHotkeyWnd.AddButton(s({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
+          customHotkeyWnd.Destroy()
+        })
+        customHotkeyWnd.Show()
       })
       titleInput := this.gui.AddEdit(s({ y: "s+2", x: c3, w: w3, r: 1, "-wrap -VScroll": "" }), entry["wnd_title"])
       titleInput.onEvent("Change", (gui, info) {
@@ -224,19 +259,18 @@ class Configurator {
         "Click", (gui, info) {
           this.config["shortcuts"].RemoveAt(index)
           this._refreshGui()
-        }
-      )
+        })
     }
 
   }
-  GUI_CLASS := {
+  COMPONENT_CLASS := {
     "CHECKBOX": "checkbox",
     "MOD_SELECT": "mod_select",
     "SUFFIX_INPUT": "suffix_input",
     "LINK": "link",
   }
-  ; Create a control of a given type, and bind it to the data
-  _addControl(guiType, payload := "", data := 0, dataKey := 0, styleOpt := false) {
+  ; Create a component of a given type, and bind it to the data
+  _addComponent(guiType, payload := "", data := 0, dataKey := 0, styleOpt := false, gui := this.gui) {
     if (IsObject(styleOpt)) {
       styleOpt := s(styleOpt)
     }
@@ -244,17 +278,16 @@ class Configurator {
       dataValue := data[dataKey]
     }
     switch guiType {
-      case this.GUI_CLASS.LINK:
-        return this.gui.AddLink(styleOpt || "ys", "<a>" payload "</a>")
-      case this.GUI_CLASS.CHECKBOX:
-        checkbox := this.gui.AddCheckbox(styleOpt || "section xs y+10", payload)
+      case this.COMPONENT_CLASS.LINK:
+        return gui.AddLink(styleOpt || "ys", "<a>" payload "</a>")
+      case this.COMPONENT_CLASS.CHECKBOX:
+        checkbox := gui.AddCheckbox(styleOpt || "section xs y+10", payload)
         checkbox.Value := dataValue
         checkbox.OnEvent("Click", (gui, info) {
           data[dataKey] := gui.Value
         })
         return checkbox
-      case this.GUI_CLASS.MOD_SELECT:
-        this.gui.AddText(styleOpt || "section xs y+10", payload)
+      case this.COMPONENT_CLASS.MOD_SELECT:
         modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
         isFirst := true
         for modKey, modText in modDict {
@@ -262,8 +295,8 @@ class Configurator {
           isFirst := false
         }
         addMod(modKey, modText, isFirst) {
-          option := isFirst ? "ys x+15" : "ys"
-          checkbox := this.gui.AddCheckbox(option, modText)
+          option := isFirst ? "ys x+0" : "ys x+0"
+          checkbox := gui.AddCheckbox(option, modText)
           checkbox.Value := hasVal(dataValue, modKey)
           checkbox.OnEvent("Click", (gui, info) {
             if (gui.Value) {
@@ -273,9 +306,9 @@ class Configurator {
             }
           })
         }
-      case this.GUI_CLASS.SUFFIX_INPUT:
-        this.gui.AddText(styleOpt || "section xs y+15", payload)
-        edit := this.gui.AddEdit("ys-5 x+5 w200", joinStrs(dataValue))
+      case this.COMPONENT_CLASS.SUFFIX_INPUT:
+        gui.AddText(styleOpt || "section xs y+15", payload)
+        edit := gui.AddEdit("ys-5 x+5 w200", joinStrs(dataValue))
         edit.onEvent("Change", (gui, info) {
           data[dataKey] := dedupe(StrSplit(gui.Value))
             ; gui.Value := joinStrs(config[dataKey])
@@ -287,8 +320,8 @@ class Configurator {
     this.tab.UseTab(3)
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
-    this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "捕获从别处启动的程序实例", miscConfig, "reuseExistingWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获从别处启动的程序实例", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
@@ -297,8 +330,8 @@ class Configurator {
           , "帮助")
       }
     )
-    this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
   }
   _refreshGui(opt?) {
     oldGui := this.gui

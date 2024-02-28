@@ -220,7 +220,7 @@ class Configurator {
         }
       )
       NOPREFIX := 0x80
-      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])))
+      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
       hotkeyButton.onEvent("Click", (target, info) {
         customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
         this.subGuis.Push(customHotkeyWnd)

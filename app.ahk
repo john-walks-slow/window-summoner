@@ -120,14 +120,20 @@ class Configurator {
     this._addControl(this.GUI_CLASS.CHECKBOX, '启用动态绑定', dynamicConfig, "enable", "section xs ys")
     this._addControl(this.GUI_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
       MsgBox(
+        "即时绑定需要控制的窗口。`n"
         "例：在浏览文档时按 Win + Shift + 7，之后 Win + 7 就会显示/隐藏文档。`n"
-        "后缀键列表指定了哪些字符可以用作后缀键。"
         , "帮助")
     })
     this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（绑定）", dynamicConfig, "mod_bind")
     this._addControl(this.GUI_CLASS.MOD_SELECT, "修饰键（切换）", dynamicConfig, "mod_main")
     this._addControl(this.GUI_CLASS.SUFFIX_INPUT, "后缀键列表", dynamicConfig, "suffixs")
-
+    this.gui.AddLink(s({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "后缀键列表指定了哪些字符可以用作后缀键。`n"
+          , "帮助")
+      }
+    )
     this.gui.AddGroupBox(s({ section: "", w: this.guiWidth - 20, r: 2.5, x: 10, y: "+1" }))
     this.gui.AddText("section xs+5 ys+15 w270 c444444", "[绑定+后缀]: 绑定该后缀到当前活动窗口。`n[切换+后缀]: 显示/隐藏绑定的窗口。")
   }
@@ -145,7 +151,13 @@ class Configurator {
     w4 := 20
     /** Headers */
     this.gui.SetFont("c787878")
-    this.gui.AddLink(s({ section: "", x: c1, y: "s" }), "程序")
+    this.gui.AddLink(s({ section: "", x: c1, y: "s" }), "程序 " '<a href="/">?</a>').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "要启动的程序、文件或快捷方式`n"
+          , "帮助")
+      }
+    )
     this.gui.AddLink(s({ x: c2, y: "s" }), "热键 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
@@ -156,10 +168,13 @@ class Configurator {
       }
     )
 
-    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题（可选）" '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则（可选） " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
-        MsgBox("帮助 ⌈呼来唤去⌋ 捕捉程序窗口。`n"
-          "可填写正则表达式，或窗口标题的部分内容。"
+        MsgBox("若省略，『呼来唤去』会自动捕捉启动程序后出现的第一个新窗口`n`n"
+          "在以下情况下本选项会有帮助：`n"
+          "- 该程序有启动画面或需要忽略的弹窗`n"
+          "- 希望捕捉并非由『呼来唤去』启动的程序窗口`n"
+          "- 需要提高稳定性`n"
           , "帮助")
       }
     )
@@ -273,7 +288,15 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addControl(this.GUI_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addControl(this.GUI_CLASS.CHECKBOX, "优先使用已经启动的程序实例", miscConfig, "reuseExistingWindow")
+    this._addControl(this.GUI_CLASS.CHECKBOX, "捕获从别处启动的程序实例", miscConfig, "reuseExistingWindow")
+    this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "根据『窗口标题正则』，尝试在现有窗口中捕获目标程序。`n"
+          "若取消勾选，『呼来唤去』只会捕获由自己启动的程序窗口。`n"
+          , "帮助")
+      }
+    )
     this._addControl(this.GUI_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addControl(this.GUI_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
   }
@@ -334,7 +357,6 @@ setupTray() {
   A_TrayMenu.Add("退出", (*) {
     ExitApp()
   })
-
   OnMessage(0x404, (wParam, lParam, *) {
     ; user left-clicked tray icon
     if (lParam = 0x202) {

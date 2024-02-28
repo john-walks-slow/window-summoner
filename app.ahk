@@ -219,13 +219,15 @@ class Configurator {
           }
         }
       )
-      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), FormatHotkeyShorthand(entry["hotkey"]))
+      NOPREFIX := 0x80
+      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])))
       hotkeyButton.onEvent("Click", (target, info) {
         customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
         this.subGuis.Push(customHotkeyWnd)
         customHotkeyWnd.MarginX := 10
         customHotkeyWnd.MarginY := 10
-        hotkeyObj := ParseHotkeyShorthand(entry["hotkey"])
+        parseResult := ParseHotkeyShorthand(entry["hotkey"])
+        hotkeyObj := parseResult || { mods: [], key: "" }
         customHotkeyWnd.AddText("section y+10 w0 h0", "")
         this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
         customHotkeyWnd.AddEdit(s({ x: "+2", y: "s-3", w: 20 }), StrUpper(hotkeyObj.key)).OnEvent("Change", (target, info) {
@@ -240,9 +242,22 @@ class Configurator {
           target.Value := StrUpper(key)
           oldVal := target.Value
         })
+        customHotkeyWnd.AddText(s({ x: "s", y: "+20", section: "" }), "AHK (高级)")
+        advancedEdit := customHotkeyWnd.AddEdit(s({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
+        customHotkeyWnd.AddLink(s({ x: "+2" }), '<a href="/">?</a>').OnEvent(
+          "Click", (*) {
+            MsgBox(
+              "使用 AHK 格式配置更高级的热键。会覆盖上方的设置"
+              , "帮助")
+          }
+        )
         customHotkeyWnd.AddButton(s({ x: "s" }), "应用").OnEvent("Click", (gui, info) {
-          entry["hotkey"] := ToShorthand(hotkeyObj)
-          hotkeyButton.Text := FormatHotkeyShorthand(entry["hotkey"])
+          if (advancedEdit.Text) {
+            entry["hotkey"] := advancedEdit.Text
+          } else {
+            entry["hotkey"] := ToShorthand(hotkeyObj)
+          }
+          hotkeyButton.Text := EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"]))
           customHotkeyWnd.Destroy()
         })
         customHotkeyWnd.AddButton(s({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {

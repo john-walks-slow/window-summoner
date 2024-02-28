@@ -98,14 +98,18 @@ ClearHotkeys() {
 }
 
 ; Format hotkey shorthand to readable string
-FormatHotkeyShorthand(hotkey) {
+FormatHotkeyShorthand(shorthand) {
   static modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
-  return StrSplit(hotkey).Map(v => modDict.Get(v, StrUpper(v))).Join("+")
+  if (shorthand ~= "(<|>|&|\*|~|\$)")
+    return shorthand
+  return StrSplit(shorthand).Map(v => modDict.Get(v, StrUpper(v))).Join("+")
 }
 
 ; Parse hotkey shorthand to object
 ParseHotkeyShorthand(shorthand) {
   static modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
+  if (shorthand ~= "(<|>|&|\*|~|\$)")
+    return false
   hotkeyObj := { mods: [], key: "" }
   for (c in StrSplit(shorthand)) {
     if (modDict.Has(c))
@@ -119,4 +123,8 @@ ParseHotkeyShorthand(shorthand) {
 ; Convert hotkey object to shorthand
 ToShorthand(hotkeyObj) {
   return hotkeyObj.mods.Join("") . hotkeyObj.key
+}
+
+EscapeAmpersand(str) {
+  return StrReplace(str, "&", "&&")
 }

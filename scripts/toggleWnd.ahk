@@ -54,19 +54,25 @@ toggleWnd(id, entry := unset) {
     Run(entry["run"])
     TIMEOUT := 5000
     INTERVAL := 50
-    currentWnd := WinGetActiveID()
-    currentTime := A_TickCount
-    while (A_TickCount - currentTime < TIMEOUT) {
-      newWnd := WinGetActiveID()
-      ; If reuseExistingWindow is off, we only care about the new window
-      if (config["misc"]["reuseExistingWindow"] || newWnd != currentWnd) {
-        ; If wnd_title is provided, we only care about the new window that matches the title
-        if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
-          id := newWnd
-          break
+    ; Try to match existing window
+    if (config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
+      id := WinGetID(entry["wnd_title"])
+    } else {
+      ; If not found, wait for a new window
+      currentWnd := WinGetActiveID()
+      currentTime := A_TickCount
+      while (A_TickCount - currentTime < TIMEOUT) {
+        newWnd := WinGetActiveID()
+        ; We only care about new windows
+        if (newWnd != currentWnd) {
+          ; If wnd_title is provided, match it
+          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+            id := newWnd
+            break
+          }
         }
+        Sleep(INTERVAL)
       }
-      Sleep(INTERVAL)
     }
     ; Update activatedWnd
     if (id) {

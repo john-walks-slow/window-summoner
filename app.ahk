@@ -77,6 +77,7 @@ class Configurator {
           writeConfig(this.config)
           this._startMainScript()
         }
+        WinActivate(this.gui)
         MsgBox("已应用新配置")
       }
     )

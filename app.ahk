@@ -67,7 +67,7 @@ class Configurator {
 
     this.tab.UseTab(0)
     BS_FLAT := 0x8000
-    btn := this.gui.AddButton(s({ x: this.guiWidth - 35, y: "s-5", }), "应用")
+    btn := this.gui.AddButton(s({ x: this.guiWidth - 60.5, y: "s-3", }), "应用配置")
     btn.OnEvent(
       "Click", (gui, info) {
         ; writeConfig(this.config)
@@ -158,7 +158,7 @@ class Configurator {
     w2 := c3 - c2 - 7
     w3 := c4 - c3 - 7
     w4 := 20
-    /** Headers */
+    ; Headers
     this.gui.SetFont("c787878")
     this.gui.AddLink(s({ section: "", x: c1, y: "s" }), "程序 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {

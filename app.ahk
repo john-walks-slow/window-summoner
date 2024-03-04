@@ -124,11 +124,11 @@ class Configurator {
     this.tab.UseTab(2)
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     dynamicConfig := this.config["dynamic"]
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用动态绑定', dynamicConfig, "enable", "section xs ys")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用绑定', dynamicConfig, "enable", "section xs ys")
     this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
       MsgBox(
-        "即时绑定需要控制的窗口。`n"
-        "例：在浏览文档时按 Win + Shift + 7，之后 Win + 7 就会显示/隐藏文档。`n"
+        "即时为需要控制的窗口绑定热键。`n"
+        "例：浏览网页时按 Win + Shift + 0，之后按 Win + 0 就能显示 / 隐藏该浏览器窗口。`n"
         , "帮助")
     })
     this.gui.AddText("section xs y+10", "修饰键（绑定）  ")
@@ -139,7 +139,7 @@ class Configurator {
     this.gui.AddLink(s({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "可以用作后缀键的字符。`n"
+          "可以用作后缀键的字符`n"
           , "帮助")
       }
     )
@@ -170,16 +170,14 @@ class Configurator {
     this.gui.AddLink(s({ x: c2, y: "s" }), "热键 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "为程序设置热键。`n"
-          "# 代表 Win，! 代表 Alt，^ 代表 Ctrl, + 代表 Shift。`n`n"
-          "例：" "^!+q 表示 Ctrl + Alt + Shift + Q"
+          "用于唤起 / 隐藏该程序的热键`n"
           , "帮助")
       }
     )
 
-    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则 (可选) " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则 (高级) " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
-        MsgBox("省略时，『呼来唤去』会自动捕获启动程序后出现的第一个新窗口`n`n"
+        MsgBox("省略时，『呼来唤去』会自动捕获启动程序后出现的第一个新窗口。`n`n"
           "在以下情况下本选项会有帮助：`n"
           "- 该程序有启动画面或需要忽略的弹窗`n"
           "- 希望捕获并非由『呼来唤去』启动的程序窗口`n"
@@ -337,7 +335,7 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获已经启动的程序窗口", miscConfig, "reuseExistingWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
@@ -347,7 +345,7 @@ class Configurator {
       }
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏", miscConfig, "minimizeInstead")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
   }
   _refreshGui(opt?) {
     oldGui := this.gui

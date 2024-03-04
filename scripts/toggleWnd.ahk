@@ -52,7 +52,7 @@ toggleWnd(id, entry := unset) {
 
   _run() {
     Run(entry["run"])
-    TIMEOUT := 5000
+    TIMEOUT := entry["wnd_title"] ? 30000 : 5000
     INTERVAL := 50
     ; Try to match existing window
     if (config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {

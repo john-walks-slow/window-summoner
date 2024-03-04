@@ -11,6 +11,7 @@ activatedWnd := false
 toggleWnd(id, entry := unset) {
   static pending := false
   ; Prevent concurrent actions only if singleActiveWindow is on
+  ; * Every hotkey is running on a separate thread, so we need to use a static variable to keep track of the state
   if (config["misc"]["singleActiveWindow"] && pending) {
     return id
   }
@@ -51,21 +52,21 @@ toggleWnd(id, entry := unset) {
 
   _run() {
     Run(entry["run"])
-    ; Retrieve id
-    if (entry["wnd_title"] !== "" && config["misc"]["reuseExistingWindow"]) {
-      id := WinWait(entry["wnd_title"])
-    } else {
-      currentWnd := WinGetID("A")
-      while (true) {
-        newWnd := WinGetID("A")
-        if (newWnd != currentWnd) {
-          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
-            break
-          }
+    TIMEOUT := 5000
+    INTERVAL := 50
+    currentWnd := WinGetActiveID()
+    currentTime := A_TickCount
+    while (A_TickCount - currentTime < TIMEOUT) {
+      newWnd := WinGetActiveID()
+      ; If reuseExistingWindow is off, we only care about the new window
+      if (config["misc"]["reuseExistingWindow"] || newWnd != currentWnd) {
+        ; If wnd_title is provided, we only care about the new window that matches the title
+        if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+          id := newWnd
+          break
         }
-        Sleep(35)
       }
-      id := WinGetID("A")
+      Sleep(INTERVAL)
     }
     ; Update activatedWnd
     if (id) {

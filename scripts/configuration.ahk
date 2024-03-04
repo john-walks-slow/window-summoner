@@ -29,7 +29,7 @@ CONFIG_SCHEME := UMap(
 )
 CONFIG_INITIAL := UMap(
   "dynamic", UMap(
-    "enable", false,
+    "enable", true,
     "mod_bind", ["#", "+"],
     "mod_main", ["#"],
     "suffixs", [9, 0, "-", "=", "[", "]"],
@@ -46,7 +46,7 @@ CONFIG_INITIAL := UMap(
     "minimizeToTray", true,
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
-    "minimizeInstead", false
+    "minimizeInstead", false,
     "hideTray", false
   ),
 )

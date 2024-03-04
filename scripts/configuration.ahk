@@ -94,11 +94,6 @@ writeConfig(config) {
     } else {
       _deleteAutoStart()
     }
-    if (config["misc"]["hideTray"] || !config["misc"]["minimizeToTray"]) {
-      A_IconHidden := true
-    } else {
-      A_IconHidden := false
-    }
   } catch Error as e {
     throwError("Error writing config file", e)
   }

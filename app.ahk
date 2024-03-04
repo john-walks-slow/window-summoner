@@ -77,6 +77,7 @@ class Configurator {
           writeConfig(this.config)
           this._startMainScript()
         }
+        updateTrayVisibility()
         WinActivate(this.gui)
         MsgBox("已应用新配置")
       }
@@ -389,6 +390,7 @@ class Configurator {
   }
 }
 
+updateTrayVisibility()
 setupTray()
 instance := Configurator()
 if (hasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
@@ -436,4 +438,12 @@ setupTray() {
       return
     }
   })
+}
+
+updateTrayVisibility() {
+  if (config["misc"]["hideTray"] || !config["misc"]["minimizeToTray"]) {
+    A_IconHidden := true
+  } else {
+    A_IconHidden := false
+  }
 }

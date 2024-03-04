@@ -1,4 +1,4 @@
-#SingleInstance Force
+﻿#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -347,6 +347,15 @@ class Configurator {
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "完全隐藏托盘", miscConfig, "hideTray")
+    this.gui.AddLink(s({ x: "+0", y: "s+0.5" }), '(<a href="/">注意</a>)').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "你可以通过重新启动 呼来唤去.exe 来调出这个配置窗口。`n"
+          "要退出『呼来唤去』，请在 “停止” 状态下关闭配置窗口。`n"
+          , "注意")
+      }
+    )
   }
   _refreshGui(opt?) {
     oldGui := this.gui

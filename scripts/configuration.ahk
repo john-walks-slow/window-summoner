@@ -1,4 +1,4 @@
-#Requires AutoHotkey >=2.0
+﻿#Requires AutoHotkey >=2.0
 
 #Include utils.ahk
 #Include OrderedMap.ahk
@@ -24,6 +24,7 @@ CONFIG_SCHEME := UMap(
     "reuseExistingWindow", { default: true },
     "singleActiveWindow", { default: false },
     "minimizeInstead", { default: false },
+    "hideTray", { default: false },
   )
 )
 CONFIG_INITIAL := UMap(
@@ -46,6 +47,7 @@ CONFIG_INITIAL := UMap(
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
     "minimizeInstead", false
+    "hideTray", false
   ),
 )
 checkConfig(config) {

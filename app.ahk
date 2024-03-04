@@ -231,17 +231,17 @@ class Configurator {
         hotkeyObj := parseResult || { mods: [], key: "" }
         customHotkeyWnd.AddText("section y+10 w0 h0", "")
         this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
-        customHotkeyWnd.AddEdit(s({ x: "+2", y: "s-3", w: 20 }), StrUpper(hotkeyObj.key)).OnEvent("Change", (target, info) {
-          static oldVal := ""
+        oldKey := StrUpper(hotkeyObj["key"])
+        customHotkeyWnd.AddEdit(s({ x: "+2", y: "s-3", w: 20 }), oldKey).OnEvent("Change", (target, info) {
           splited := StrSplit(target.Value)
           if (splited.Length > 0) {
-            key := StrLower(splited.Get(splited.FindIndex(v => v != oldVal) || 1))
+            key := StrLower(splited.Get(splited.FindIndex(v => v != oldKey) || 1))
           } else {
             key := ""
           }
           hotkeyObj["key"] := key
           target.Value := StrUpper(key)
-          oldVal := target.Value
+          oldKey := target.Value
         })
         customHotkeyWnd.AddText(s({ x: "s", y: "+20", section: "" }), "AHK (高级)")
         advancedEdit := customHotkeyWnd.AddEdit(s({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
@@ -252,7 +252,7 @@ class Configurator {
               , "帮助")
           }
         )
-        customHotkeyWnd.AddButton(s({ x: "s" }), "应用").OnEvent("Click", (gui, info) {
+        customHotkeyWnd.AddButton(s({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
           if (advancedEdit.Text) {
             entry["hotkey"] := advancedEdit.Text
           } else {

@@ -1,4 +1,4 @@
-﻿#SingleInstance Force
+#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -30,7 +30,7 @@ class Configurator {
         gui.Destroy()
       }
       this.subGuis := []
-      if (!this.isMainRunning) {
+      if (!this.config["misc"]["minimizeToTray"] || !this.isMainRunning) {
         ExitApp()
       }
     })
@@ -335,6 +335,7 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "关闭到托盘", miscConfig, "minimizeToTray")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
@@ -381,9 +382,9 @@ class Configurator {
 
 setupTray()
 instance := Configurator()
-if (!hasVal(A_Args, "--no-gui")) {
-  instance.createGui()
+if (hasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
 } else {
+  instance.createGui()
 }
 instance._startMainScript()
 

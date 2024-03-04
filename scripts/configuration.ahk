@@ -1,4 +1,4 @@
-﻿#Requires AutoHotkey >=2.0
+#Requires AutoHotkey >=2.0
 
 #Include utils.ahk
 #Include OrderedMap.ahk
@@ -20,6 +20,7 @@ CONFIG_SCHEME := UMap(
   )),
   "misc", UMap(
     "autoStart", { default: false },
+    "minimizeToTray", { default: true },
     "reuseExistingWindow", { default: true },
     "singleActiveWindow", { default: false },
     "minimizeInstead", { default: false },
@@ -41,6 +42,7 @@ CONFIG_INITIAL := UMap(
   ),
   "misc", UMap(
     "autoStart", false,
+    "minimizeToTray", true,
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
     "minimizeInstead", false
@@ -89,6 +91,11 @@ writeConfig(config) {
       _createAutoStart()
     } else {
       _deleteAutoStart()
+    }
+    if (config["misc"]["hideTray"] || !config["misc"]["minimizeToTray"]) {
+      A_IconHidden := true
+    } else {
+      A_IconHidden := false
     }
   } catch Error as e {
     throwError("Error writing config file", e)

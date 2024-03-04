@@ -348,7 +348,7 @@ class Configurator {
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "完全隐藏托盘", miscConfig, "hideTray")
-    this.gui.AddLink(s({ x: "+0", y: "s+0.5" }), '(<a href="/">注意</a>)').OnEvent(
+    this.gui.AddLink(s({ x: "+0", y: "s+1" }), '(<a href="/">注意</a>)').OnEvent(
       "Click", (*) {
         MsgBox(
           "你可以通过重新启动 呼来唤去.exe 来调出这个配置窗口。`n"

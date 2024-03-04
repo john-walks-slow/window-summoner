@@ -129,3 +129,11 @@ ToShorthand(hotkeyObj) {
 EscapeAmpersand(str) {
   return StrReplace(str, "&", "&&")
 }
+
+WinGetActiveID() {
+  try {
+    return WinGetID("A")
+  } catch Error as e {
+    return 0
+  }
+}

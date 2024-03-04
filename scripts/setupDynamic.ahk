@@ -17,7 +17,7 @@ _setupDynamicBinding(key, dynamicConfig) {
   MyHotkey(bindShortcut, (key) {
     try {
       oldId := id
-      id := WinGetID("A")
+      id := WinGetActiveID()
     }
     global wndHandlers
     if (oldId && wndHandlers.Has(String(oldId))) {

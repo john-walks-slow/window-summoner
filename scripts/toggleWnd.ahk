@@ -1,4 +1,4 @@
-﻿#Include utils.ahk
+#Include utils.ahk
 #Include ../app.ahk
 
 ; id - onExitHandlers
@@ -27,6 +27,7 @@ toggleWnd(id, entry := unset) {
       isVisible := WinGetStyle(id) & 0x10000000
       if (isVisible && WinActive(id)) {
         _hide(id)
+        _restoreLastFocus()
       } else {
         _show(id)
       }
@@ -43,7 +44,7 @@ toggleWnd(id, entry := unset) {
   else if (IsSet(entry)) {
     if (config["misc"]["singleActiveWindow"] && activatedWnd) {
       if (!config["misc"]["minimizeInstead"])
-        _hide(activatedWnd, false)
+        _hide(activatedWnd)
       else
         _minimize(activatedWnd)
     }
@@ -79,24 +80,25 @@ toggleWnd(id, entry := unset) {
       activatedWnd := id
     }
   }
-
-  _hide(id, restoreLastActive := true) {
+  _restoreLastFocus() {
+    try {
+      Send("!{Esc}")
+      ; DetectHiddenWindows(false)
+      ; wndList := WinGetList()
+      ; DetectHiddenWindows(true)
+      ; ; Find the first window that is not minimized
+      ; wndIndex := wndList.FindIndex((wnd) => wnd !== id && WinGetMinMax(wnd) > -1, 1)
+      ; OutputDebug(WinGetTitle(wndList[wndIndex]))
+      ; if (wndIndex !== 0) {
+      ;   WinActivate(wndList[wndIndex])
+      ; }
+    }
+  }
+  _hide(id) {
     try {
       ; WinMinimize(id)
       WinHide(id)
       activatedWnd := false
-    }
-    ; Restore focus
-    if (restoreLastActive) {
-      try {
-        DetectHiddenWindows(false)
-        wndList := WinGetList()
-        DetectHiddenWindows(true)
-        wndIndex := wndList.FindIndex((wnd) => WinGetMinMax(wnd) > -1, 2)
-        if (wndIndex !== 0) {
-          WinActivate(wndList[wndIndex])
-        }
-      }
     }
     ; Handle exit, try to reuse handler
     if (!wndHandlers.Has(String(id))) {
@@ -105,7 +107,7 @@ toggleWnd(id, entry := unset) {
         try {
           isVisible := WinGetStyle(id) & 0x10000000
           if (!isVisible) {
-            WinShow(id)
+            WinMinimize(id)
           }
         }
       }
@@ -119,7 +121,7 @@ toggleWnd(id, entry := unset) {
   _show(id) {
     ; Hide other active windows
     if (config["misc"]["singleActiveWindow"] && activatedWnd && activatedWnd !== id) {
-      _hide(activatedWnd, false)
+      _hide(activatedWnd)
     }
     try {
       WinShow(id)

@@ -1,4 +1,4 @@
-﻿#SingleInstance Force
+#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -78,7 +78,6 @@ class Configurator {
           this._startMainScript()
         }
         updateTrayVisibility()
-        WinActivate(this.gui)
         MsgBox("已应用新配置")
       }
     )

@@ -1,4 +1,4 @@
-#SingleInstance Force
+﻿#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -347,6 +347,7 @@ class Configurator {
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "启用淡出过渡动画", miscConfig, "fadeOutTransition")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "隐藏托盘图标", miscConfig, "hideTray")
     this.gui.AddLink(s({ x: "+0", y: "s+1" }), '(<a href="/">注意</a>)').OnEvent(
       "Click", (*) {

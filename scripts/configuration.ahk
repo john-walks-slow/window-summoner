@@ -24,6 +24,7 @@ CONFIG_SCHEME := UMap(
     "reuseExistingWindow", { default: true },
     "singleActiveWindow", { default: false },
     "minimizeInstead", { default: false },
+    "fadeOutTransition", { default: true },
     "hideTray", { default: false },
   )
 )
@@ -47,6 +48,7 @@ CONFIG_INITIAL := UMap(
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
     "minimizeInstead", false,
+    "fadeOutTransition", true,
     "hideTray", false
   ),
 )

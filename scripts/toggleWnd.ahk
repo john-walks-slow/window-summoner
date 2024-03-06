@@ -82,13 +82,10 @@ toggleWnd(id, entry := unset) {
 
   _hide(id, restoreLastFocus := false) {
     try {
-      (config["misc"]["fadeOutTransition"]) && WinHide(id)
+      (config["misc"]["transitionAnim"]) && WinHide(id)
       if (restoreLastFocus) {
-        WinMinimize(id)
-        ; Alternative approach, not used
-        ; if (restoreLastFocus) {
-        ;   Send("!{Esc}")
-        ; }
+        (config["misc"]["transitionAnim"]) && WinMinimize(id)
+        (!config["misc"]["transitionAnim"]) && Send("!{Esc}")
       }
       WinHide(id)
       activatedWnd := false

@@ -114,8 +114,9 @@ toggleWnd(id, entry := unset) {
       _hide(activatedWnd)
     }
     try {
+      (!config["misc"]["transitionAnim"]) && WinActivate(id)
       WinShow(id)
-      WinActivate(id)
+      (config["misc"]["transitionAnim"]) && WinActivate(id)
       activatedWnd := id
     }
   }

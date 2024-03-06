@@ -126,6 +126,7 @@ toggleWnd(id, entry := unset) {
     try {
       WinShow(id)
       WinActivate(id)
+      WinShow(id)
       activatedWnd := id
     }
   }

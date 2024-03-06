@@ -1,4 +1,4 @@
-#Include utils.ahk
+﻿#Include utils.ahk
 #Include ../app.ahk
 
 ; id - onExitHandlers
@@ -26,8 +26,7 @@ toggleWnd(id, entry := unset) {
       ; Hide / Show
       isVisible := WinGetStyle(id) & 0x10000000
       if (isVisible && WinActive(id)) {
-        _hide(id)
-        _restoreLastFocus()
+        _hide(id, true)
       } else {
         _show(id)
       }
@@ -80,23 +79,17 @@ toggleWnd(id, entry := unset) {
       activatedWnd := id
     }
   }
-  _restoreLastFocus() {
+
+  _hide(id, restoreLastFocus := false) {
     try {
-      Send("!{Esc}")
-      ; DetectHiddenWindows(false)
-      ; wndList := WinGetList()
-      ; DetectHiddenWindows(true)
-      ; ; Find the first window that is not minimized
-      ; wndIndex := wndList.FindIndex((wnd) => wnd !== id && WinGetMinMax(wnd) > -1, 1)
-      ; OutputDebug(WinGetTitle(wndList[wndIndex]))
-      ; if (wndIndex !== 0) {
-      ;   WinActivate(wndList[wndIndex])
-      ; }
-    }
-  }
-  _hide(id) {
-    try {
-      ; WinMinimize(id)
+      (config["misc"]["fadeOutTransition"]) && WinHide(id)
+      if (restoreLastFocus) {
+        WinMinimize(id)
+        ; Alternative approach, not used
+        ; if (restoreLastFocus) {
+        ;   Send("!{Esc}")
+        ; }
+      }
       WinHide(id)
       activatedWnd := false
     }
@@ -126,7 +119,6 @@ toggleWnd(id, entry := unset) {
     try {
       WinShow(id)
       WinActivate(id)
-      WinShow(id)
       activatedWnd := id
     }
   }

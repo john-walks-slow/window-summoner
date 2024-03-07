@@ -141,3 +141,15 @@ WinGetActiveID() {
 TimedTip(text, timeout := 1000) {
   ToolTip(text, A_ScreenWidth, A_ScreenHeight) && SetTimer(() => ToolTip(), -timeout)
 }
+
+CallAsync(func, args*) {
+  return NewThread(
+    "try {`n"
+    func.Name "(" JoinStrs(args, ",") ")`n"
+    "}"
+  )
+}
+
+Call(func, args*) {
+  return func.Call(args*)
+}

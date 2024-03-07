@@ -85,7 +85,8 @@ toggleWnd(id, entry := unset) {
     try {
       if (restoreLastFocus) {
         if (config["misc"]["transitionAnim"]) {
-          Call(WinMinimize, id)
+          CallAsync(WinMinimize, id)
+          Sleep(150)
         } else
           Send("!{Esc}")
       }
@@ -98,6 +99,7 @@ toggleWnd(id, entry := unset) {
   _show(id) {
     try {
       CallAsync(WinShow, id)
+      Sleep(50)
       CallAsync(WinActivate, id)
       activatedWnd := id
     }

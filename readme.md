@@ -2,6 +2,12 @@
 
 # 呼来唤去 - 一键显隐窗口
 
+<figure>
+    <img width="600" src="misc/demo1.gif">
+    <!-- <figcaption>演示</figcaption> -->
+</figure>
+
+
 ## 功能
 
 - 召唤：为任意程序配置老板键，随叫随到
@@ -17,10 +23,7 @@
 - 关闭过渡动画
 
 ## 截图
-<figure>
-    <img width="300" src="misc/demo1.gif">
-    <!-- <figcaption>演示</figcaption> -->
-</figure>
+
 <figure>
     <img width="300" src="misc/screenshot1.png">
     <!-- <figcaption>召唤配置</figcaption> -->

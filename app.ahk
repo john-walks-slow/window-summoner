@@ -1,4 +1,6 @@
-#SingleInstance Force
+﻿#SingleInstance Force
+#Warn All, OutputDebug
+
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -20,6 +22,7 @@ class Configurator {
     this._skeleton()
     this._menu()
     this._dynamicTab()
+    this._workspaceTab()
     this._miscTab()
     this._shortcutTab()
     this.gui.Show()
@@ -60,16 +63,16 @@ class Configurator {
     TCS_OWNERDRAWFIXED := 0x2000
     TCS_HOTTRACK := 0x0040
     TCS_FLATBUTTONS := 0x0008
-    this.tab := this.gui.AddTab2(s({
+    this.tab := this.gui.AddTab2(S({
       w: this.guiWidth,
       h: 19, %TCS_HOTTRACK%: "", %TCS_BUTTONS%: "", %TCS_FLATBUTTONS%: "",
       ; "Bottom": "",
       ; "Background": "White",
-    }), ["热键", "绑定", "其它"])
+    }), ["召唤", "绑定", "工作区", "设置"])
 
     this.tab.UseTab(0)
     BS_FLAT := 0x8000
-    btn := this.gui.AddButton(s({ x: this.guiWidth - 60.5, y: "s-3", }), "应用配置")
+    btn := this.gui.AddButton(S({ x: this.guiWidth - 60.5, y: "s-3", }), "应用配置")
     btn.OnEvent(
       "Click", (gui, info) {
         ; writeConfig(this.config)
@@ -98,13 +101,6 @@ class Configurator {
       Run("https://github.com/john-walks-slow/window-summoner")
     },)
 
-    scriptMenu := Menu()
-    scriptMenu.Add("运行", (name, pos, menu) {
-    })
-    scriptMenu.Add("重启", (name, pos, menu) {
-    })
-    scriptMenu.Add("停止", (name, pos, menu) {
-    })
     this.gui.MenuBar := MenuBar()
     this.STATE_RUNNING := "⏹ 停止"
     this.STATE_IDLE := "▶️  启动"
@@ -127,26 +123,54 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     dynamicConfig := this.config["dynamic"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用绑定', dynamicConfig, "enable", "section xs ys")
-    this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
-      MsgBox(
-        "为当前活跃窗口绑定热键。`n"
-        "例：浏览网页时按 Win + Shift + 0，之后按 Win + 0 就能显示 / 隐藏该浏览器窗口。`n"
-        , "帮助")
-    })
-    this.gui.AddText("section xs y+10", "修饰键（绑定）  ")
+    ; this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
+    ;   MsgBox(
+    ;     "为当前活跃窗口绑定热键。`n"
+    ;     "例：浏览网页时按 Win + Shift + 0，之后按 Win + 0 就能显示 / 隐藏该浏览器窗口。`n"
+    ;     , "帮助")
+    ; })
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "绑定时显示提示框", dynamicConfig, "showTip")
+    this.gui.AddText("section xs y+13", "修饰键（绑定）  ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_bind")
     this.gui.AddText("section xs y+10", "修饰键（切换）  ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_main")
-    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", dynamicConfig, "suffixs")
-    this.gui.AddLink(s({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
+    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀组", dynamicConfig, "suffixs")
+    this.gui.AddLink(S({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "可以用作后缀键的字符`n"
+          "可以用作后缀的一组字符`n"
           , "帮助")
       }
     )
-    this.gui.AddGroupBox(s({ section: "", w: this.guiWidth - 20, r: 2.5, x: 10, y: "+1" }))
-    this.gui.AddText("section xs+5 ys+15 w270 c444444", "[绑定+后缀]: 绑定该后缀到当前活动窗口。`n[切换+后缀]: 显示/隐藏绑定的窗口。")
+    this._addComponent(this.COMPONENT_CLASS.INFO_BOX,
+      "绑定功能可以让你随时绑定需要控制的窗口。`n`n"
+      "按下【修饰键（绑定）+任一后缀】将当前窗口与某一后缀绑定。`n"
+      "按下【修饰键（切换）+任一后缀】切换到与该后缀绑定的窗口。`n`n"
+      "例：Win+Shift+0 绑定一个窗口，然后用 Win+0 调起/隐藏该窗口。",
+      , , "r6.3 y+10")
+  }
+  _workspaceTab() {
+    this.tab.UseTab(3)
+    this.gui.AddText("section x+10 y+10 w0 h0", "")
+    workspaceConfig := this.config["workspace"]
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用工作区', workspaceConfig, "enable", "section xs ys")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "切换工作区时显示提示框", workspaceConfig, "showTip")
+    this.gui.AddText("section xs y+13", "修饰键   ")
+    this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, workspaceConfig, "mod")
+    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀组", workspaceConfig, "suffixs")
+    this.gui.AddLink(S({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "可以用作后缀的一组字符`n"
+          , "帮助")
+      }
+    )
+    this._addComponent(this.COMPONENT_CLASS.INFO_BOX,
+      "工作区存储了一组窗口的显示状态。`n`n"
+      "除默认工作区外，每个后缀都指向一个不同的工作区。`n`n"
+      "按下【修饰键+任一后缀】切换到编号为后缀的工作区。在一个工作区内再次按下相应热键会回到默认工作区。`n`n"
+      "例：老板来了按 Win+[，老板走了再按一下。",
+      , , "r8.2 y+15")
   }
   _shortcutTab() {
     this.tab.UseTab(1)
@@ -161,15 +185,14 @@ class Configurator {
     w3 := c4 - c3 - 7
     w4 := 20
     ; Headers
-    this.gui.SetFont("c787878")
-    this.gui.AddLink(s({ section: "", x: c1, y: "s" }), "程序 " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ section: "", x: c1, y: "s", c: "787878" }), "程序 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
           "要启动的程序、文件或快捷方式`n"
           , "帮助")
       }
     )
-    this.gui.AddLink(s({ x: c2, y: "s" }), "热键 " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ x: c2, y: "s", c: "787878" }), "热键 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
           "用于唤起 / 隐藏该程序的热键`n"
@@ -177,7 +200,7 @@ class Configurator {
       }
     )
 
-    this.gui.AddLink(s({ x: c3, y: "s" }), "窗口标题正则 (高级) " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ x: c3, y: "s", c: "787878" }), "窗口标题正则 (高级) " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
           "省略时，『呼来唤去』会自动捕获启动程序后出现的第一个新窗口。`n"
@@ -193,7 +216,7 @@ class Configurator {
 
     ; this.gui.AddProgress(s({ Background: "AAAAAA", h: 1, w: this.guiWidth - 50, x: "s", y: "+5" }))
 
-    this.gui.AddButton(s({ x: c4, y: "s-7", }), "+").OnEvent(
+    this.gui.AddButton(S({ x: c4, y: "s-7", }), "+").OnEvent(
       "Click", (gui, info) {
         this.tab.UseTab(1)
         shortcutConfig.Push(UMap("hotkey", "", "run", "", "wnd_title", ""))
@@ -212,7 +235,7 @@ class Configurator {
         ; this.gui.AddText(s({ section: "", x: "s", y: isFirst ? "s" : "+10" }), match[1])
         return match ? match[1] : false
       }
-      appSelect := this.gui.AddButton(s({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt() || "选择")
+      appSelect := this.gui.AddButton(S({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt() || "选择")
       appSelect.OnEvent(
         "Click", (gui, info) {
           fileChoice := FileSelect(32)
@@ -223,7 +246,7 @@ class Configurator {
         }
       )
       NOPREFIX := 0x80
-      hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
+      hotkeyButton := this.gui.AddButton(S({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
       hotkeyButton.onEvent("Click", (target, info) {
         customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
         this.subGuis.Push(customHotkeyWnd)
@@ -234,7 +257,7 @@ class Configurator {
         customHotkeyWnd.AddText("section y+10 w0 h0", "")
         this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
         oldKey := StrUpper(hotkeyObj["key"])
-        customHotkeyWnd.AddEdit(s({ x: "+2", y: "s-3", w: 20 }), oldKey).OnEvent("Change", (target, info) {
+        customHotkeyWnd.AddEdit(S({ x: "+2", y: "s-3", w: 20 }), oldKey).OnEvent("Change", (target, info) {
           splited := StrSplit(target.Value)
           if (splited.Length > 0) {
             key := StrLower(splited.Get(splited.FindIndex(v => v != oldKey) || 1))
@@ -245,16 +268,16 @@ class Configurator {
           target.Value := StrUpper(key)
           oldKey := target.Value
         })
-        customHotkeyWnd.AddText(s({ x: "s", y: "+20", section: "" }), "AHK (高级)")
-        advancedEdit := customHotkeyWnd.AddEdit(s({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
-        customHotkeyWnd.AddLink(s({ x: "+2" }), '<a href="/">?</a>').OnEvent(
+        customHotkeyWnd.AddText(S({ x: "s", y: "+20", section: "" }), "AHK (高级)")
+        advancedEdit := customHotkeyWnd.AddEdit(S({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
+        customHotkeyWnd.AddLink(S({ x: "+2" }), '<a href="/">?</a>').OnEvent(
           "Click", (*) {
             MsgBox(
               "使用 AHK 格式配置更高级的热键。会覆盖上方的设置"
               , "帮助")
           }
         )
-        customHotkeyWnd.AddButton(s({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
+        customHotkeyWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
           if (advancedEdit.Text) {
             entry["hotkey"] := advancedEdit.Text
           } else {
@@ -263,16 +286,16 @@ class Configurator {
           hotkeyButton.Text := EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"]))
           customHotkeyWnd.Destroy()
         })
-        customHotkeyWnd.AddButton(s({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
+        customHotkeyWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
           customHotkeyWnd.Destroy()
         })
         customHotkeyWnd.Show()
       })
-      titleInput := this.gui.AddEdit(s({ y: "s+2", x: c3, w: w3, r: 1, "-wrap -VScroll": "" }), entry["wnd_title"])
+      titleInput := this.gui.AddEdit(S({ y: "s+2", x: c3, w: w3, r: 1, "-wrap -VScroll": "" }), entry["wnd_title"])
       titleInput.onEvent("Change", (gui, info) {
         entry["wnd_title"] := gui.Value
       })
-      removeBtn := this.gui.AddButton(s({ x: c4, y: "s" }), "-")
+      removeBtn := this.gui.AddButton(S({ x: c4, y: "s" }), "-")
       removeBtn.OnEvent(
         "Click", (gui, info) {
           this.config["shortcuts"].RemoveAt(index)
@@ -286,11 +309,12 @@ class Configurator {
     "MOD_SELECT": "mod_select",
     "SUFFIX_INPUT": "suffix_input",
     "LINK": "link",
+    "INFO_BOX": "info_box",
   }
   ; Create a component of a given type, and bind it to the data
   _addComponent(guiType, payload := "", data := 0, dataKey := 0, styleOpt := false, gui := this.gui) {
     if (IsObject(styleOpt)) {
-      styleOpt := s(styleOpt)
+      styleOpt := S(styleOpt)
     }
     if (data && dataKey) {
       dataValue := data[dataKey]
@@ -315,33 +339,51 @@ class Configurator {
         addMod(modKey, modText, isFirst) {
           option := isFirst ? "ys x+0" : "ys x+0"
           checkbox := gui.AddCheckbox(option, modText)
-          checkbox.Value := hasVal(dataValue, modKey)
+          checkbox.Value := HasVal(dataValue, modKey)
           checkbox.OnEvent("Click", (gui, info) {
             if (gui.Value) {
-              pushDedupe(dataValue, modKey)
+              PushDedupe(dataValue, modKey)
             } else {
-              deleteVal(dataValue, modKey)
+              DeleteVal(dataValue, modKey)
             }
           })
         }
       case this.COMPONENT_CLASS.SUFFIX_INPUT:
         gui.AddText(styleOpt || "section xs y+15", payload)
-        edit := gui.AddEdit("ys-5 x+5 w200", joinStrs(dataValue))
+        edit := gui.AddEdit("ys-5 x+5 w200", JoinStrs(dataValue))
         edit.onEvent("Change", (gui, info) {
-          data[dataKey] := dedupe(StrSplit(gui.Value))
+          data[dataKey] := Dedupe(StrSplit(gui.Value))
             ; gui.Value := joinStrs(config[dataKey])
         })
+      case this.COMPONENT_CLASS.INFO_BOX:
+        gui.AddGroupBox(S({ section: "", w: this.guiWidth - 20, r: 2.5, x: 10, y: "+5", c: "111111" }) " " styleOpt)
+        gui.AddText(S({ x: "s+5", y: "s+18", c: "333333", w: this.guiWidth - 40 }), payload)
+        gui.SetFont("w500")
+        gui.AddText(S({ x: "s+5", y: "s+1", c: "196ebf" }), " 帮助 ")
+        gui.SetFont("")
       default:
     }
   }
   _miscTab() {
-    this.tab.UseTab(3)
+    this.tab.UseTab(4)
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     miscConfig := this.config["misc"]
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart", "section xs ys")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "关闭到托盘", miscConfig, "minimizeToTray")
+    this.gui.AddText("section xs ys c676767", "通用")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "后台运行", miscConfig, "minimizeToTray")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "后台运行时隐藏托盘图标", miscConfig, "hideTray")
+    this.gui.AddLink(S({ x: "+0", y: "s+1" }), '(<a href="/">注意</a>)').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "隐藏托盘图标后，你可以通过重新打开『呼来唤去』调出配置窗口。`n"
+          "在 “停止” 状态下关闭配置窗口可退出『呼来唤去』。`n"
+          , "注意")
+      }
+    )
+    this.gui.AddText("xs y+20 c676767", "行为")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "启用过渡动画", miscConfig, "transitionAnim")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
-    this.gui.AddLink(s({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
           "勾选后，会根据『窗口标题正则』在现有窗口中尝试捕获目标窗口。`n"
@@ -351,17 +393,6 @@ class Configurator {
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "启用过渡动画", miscConfig, "transitionAnim")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "隐藏托盘图标", miscConfig, "hideTray")
-    this.gui.AddLink(s({ x: "+0", y: "s+1" }), '(<a href="/">注意</a>)').OnEvent(
-      "Click", (*) {
-        MsgBox(
-          "隐藏呼来唤去的托盘图标。`n"
-          "你可以通过重新启动 呼来唤去.exe 调出本窗口。`n"
-          "在 “停止” 状态下关闭本窗口，即可退出呼来唤去。`n"
-          , "注意")
-      }
-    )
   }
   _refreshGui(opt?) {
     oldGui := this.gui
@@ -400,7 +431,7 @@ class Configurator {
 updateTrayVisibility()
 setupTray()
 instance := Configurator()
-if (hasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
+if (HasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
 } else {
   instance.createGui()
 }

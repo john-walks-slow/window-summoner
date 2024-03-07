@@ -6,34 +6,19 @@
 
 CONFIG_PATH := A_ScriptDir . "\data\config.json"
 
-CONFIG_SCHEME := UMap(
-  "dynamic", UMap(
-    "enable", { default: true },
-    "mod_bind", { default: ["#", "+"] },
-    "mod_main", { default: ["#"] },
-    "suffixs", { default: [9, 0, "-", "=", "[", "]"] },
-  ),
-  "shortcuts", Map("*", UMap(
-    "hotkey", { default: "" },
-    "run", { default: "" },
-    "wnd_title", { default: "" },
-  )),
-  "misc", UMap(
-    "autoStart", { default: false },
-    "minimizeToTray", { default: true },
-    "reuseExistingWindow", { default: true },
-    "singleActiveWindow", { default: false },
-    "minimizeInstead", { default: false },
-    "transitionAnim", { default: true },
-    "hideTray", { default: false },
-  )
-)
-CONFIG_INITIAL := UMap(
+CONFIG_DEFAULT := UMap(
   "dynamic", UMap(
     "enable", true,
+    "showTip", true,
     "mod_bind", ["#", "+"],
     "mod_main", ["#"],
-    "suffixs", [9, 0, "-", "=", "[", "]"],
+    "suffixs", [9, 0, "-", "="],
+  ),
+  "workspace", UMap(
+    "enable", true,
+    "showTip", true,
+    "mod", ["#"],
+    "suffixs", ["[", "]"],
   ),
   "shortcuts", UArray(
     UMap(
@@ -45,31 +30,33 @@ CONFIG_INITIAL := UMap(
   "misc", UMap(
     "autoStart", false,
     "minimizeToTray", true,
+    "hideTray", false,
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
     "minimizeInstead", false,
     "transitionAnim", true,
-    "hideTray", false
   ),
 )
 checkConfig(config) {
-  _checkConfigWithScheme(config["dynamic"], CONFIG_SCHEME["dynamic"])
-  _checkConfigWithScheme(config["misc"], CONFIG_SCHEME["misc"], true)
+  _normalizeConfig(config, "dynamic")
+  _normalizeConfig(config, "workspace")
+  _normalizeConfig(config, "misc")
 
-  for cKey, cValue in config["shortcuts"] {
-    _checkConfigWithScheme(cValue, CONFIG_SCHEME["shortcuts"]["*"])
+  for (shortcutConfig in config.Get("shortcuts", [])) {
+    _mergeConfig(shortcutConfig, CONFIG_DEFAULT["shortcuts"][1])
   }
 
-  _checkConfigWithScheme(config, scheme, merge := false) {
-    for sKey, sValue in scheme {
-      if (!sValue.HasProp("optional") || !sValue.optional) {
-        if (!config.Has(sKey)) {
-          if (!merge) {
-            throwError("Invalid config")
-          } else {
-            config.Set(sKey, sValue.default)
-          }
-        }
+  _normalizeConfig(config, key) {
+    if (!config.Has(key)) {
+      config.Set(key, CONFIG_DEFAULT[key])
+    } else {
+      _mergeConfig(config.Get(key), CONFIG_DEFAULT[key])
+    }
+  }
+  _mergeConfig(entry, default) {
+    for sKey, sValue in default {
+      if (!entry.Has(sKey)) {
+        entry.Set(sKey, sValue)
       }
     }
   }
@@ -77,13 +64,13 @@ checkConfig(config) {
 readConfig() {
   try {
     if (!FileExist(CONFIG_PATH)) {
-      writeConfig(CONFIG_INITIAL)
+      writeConfig(CONFIG_DEFAULT)
     }
     config := Yaml(FileRead(CONFIG_PATH))
     checkConfig(config)
     return config
   } catch Error as e {
-    throwError("Error reading config file", e)
+    ThrowError("Error reading config file", e)
 
   }
 }
@@ -97,7 +84,7 @@ writeConfig(config) {
       _deleteAutoStart()
     }
   } catch Error as e {
-    throwError("Error writing config file", e)
+    ThrowError("Error writing config file", e)
   }
 }
 

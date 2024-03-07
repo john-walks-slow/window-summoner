@@ -1,23 +1,45 @@
-<img align="left" width="50" height="50" src="misc/icon_480.png">
+<img align="left" width="50" height="50" width="300" src="misc/icon_480.png">
 
 # 呼来唤去 - 一键显隐窗口
 
 ## 功能
 
-- 为任意程序配置老板键，一键唤起 / 隐藏
-- 为任意窗口绑定老板键
-- 支持开机自启、最小化到托盘
-- （可选）唤起新窗口时隐藏其他已唤起的窗口
-- （可选）最小化窗口而不是隐藏窗口
-- （可选）使用正则表达式精准捕捉需要控制的窗口
-- （可选）打开/关闭过渡动画
+- 召唤：为任意程序配置老板键，随叫随到
+- 绑定：给窗口绑定老板键，来去自如
+- 工作区：将当前打开的所有窗口保存为工作区，随时切换
+
+### 可选
+
+- 开机自启、最小化到托盘
+- 唤起新窗口时隐藏其他已唤起的窗口
+- 用最小化代替隐藏
+- 使用正则表达式精准捕捉需要控制的窗口
+- 关闭过渡动画
+
+## 截图
+<figure>
+    <img width="300" src="misc/demo1.gif">
+    <!-- <figcaption>演示</figcaption> -->
+</figure>
+<figure>
+    <img width="300" src="misc/screenshot1.png">
+    <!-- <figcaption>召唤配置</figcaption> -->
+</figure>
+<figure>
+    <img width="300" src="misc/screenshot2.png">
+    <!-- <figcaption>绑定配置</figcaption> -->
+</figure>
+<figure>
+    <img width="300" src="misc/screenshot3.png">
+    <!-- <figcaption>工作区配置</figcaption> -->
+</figure>
+<figure>
+    <img width="300" src="misc/screenshot4.png">
+    <!-- <figcaption>设置</figcaption> -->
+</figure>
 
 ## 下载
 
 > 更新时请覆盖上一个版本，配置会保留
 
 [![](https://img.shields.io/badge/download-latest-orange.svg)](https://github.com/john-walks-slow/window-summoner/releases/latest)
-
-
-## 截图
-<img align="left" width="400" src="misc/screenshot3.png">

@@ -134,7 +134,7 @@ class Configurator {
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_bind")
     this.gui.AddText("section xs y+10", "修饰键（切换）  ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, dynamicConfig, "mod_main")
-    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀组", dynamicConfig, "suffixs")
+    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", dynamicConfig, "suffixs")
     this.gui.AddLink(S({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
@@ -157,7 +157,7 @@ class Configurator {
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "切换工作区时显示提示框", workspaceConfig, "showTip")
     this.gui.AddText("section xs y+13", "修饰键   ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, workspaceConfig, "mod")
-    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀组", workspaceConfig, "suffixs")
+    this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", workspaceConfig, "suffixs")
     this.gui.AddLink(S({ x: "+5", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(

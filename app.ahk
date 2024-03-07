@@ -63,7 +63,7 @@ class Configurator {
       h: 19, %TCS_HOTTRACK%: "", %TCS_BUTTONS%: "", %TCS_FLATBUTTONS%: "",
       ; "Bottom": "",
       ; "Background": "White",
-    }), ["老板键", "绑定", "其它"])
+    }), ["热键", "绑定", "其它"])
 
     this.tab.UseTab(0)
     BS_FLAT := 0x8000
@@ -127,7 +127,7 @@ class Configurator {
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用绑定', dynamicConfig, "enable", "section xs ys")
     this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
       MsgBox(
-        "为当前活跃窗口绑定老板键。`n"
+        "为当前活跃窗口绑定热键。`n"
         "例：浏览网页时按 Win + Shift + 0，之后按 Win + 0 就能显示 / 隐藏该浏览器窗口。`n"
         , "帮助")
     })
@@ -167,7 +167,7 @@ class Configurator {
           , "帮助")
       }
     )
-    this.gui.AddLink(s({ x: c2, y: "s" }), "老板键 " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(s({ x: c2, y: "s" }), "热键 " '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
           "用于唤起 / 隐藏该程序的热键`n"
@@ -223,7 +223,7 @@ class Configurator {
       NOPREFIX := 0x80
       hotkeyButton := this.gui.AddButton(s({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
       hotkeyButton.onEvent("Click", (target, info) {
-        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置老板键" : "配置 " appSelect.Text " 的老板键")
+        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
         this.subGuis.Push(customHotkeyWnd)
         customHotkeyWnd.MarginX := 10
         customHotkeyWnd.MarginY := 10

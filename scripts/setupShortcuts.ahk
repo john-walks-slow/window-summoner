@@ -16,18 +16,36 @@ _setupShortcut(entry) {
   wndId := false
   ; Hotkey handler
   onPress(key) {
-    ; If already waiting for an action to complete, return
-
-    if (config["misc"]["reuseExistingWindow"]) {
-      ; If wndId invalid, try to match another existing window
-      if (!(wndId && WinExist(wndId)) && entry["wnd_title"] !== "") {
-        try {
-          wndId := WinGetID(entry["wnd_title"])
-        }
-      }
-    }
     wndId := toggleWnd(wndId, entry)
-
   }
   MyHotkey(entry["hotkey"], onPress)
 }
+
+/* setupShortcuts(shortcutConfig) {
+  entriesByHotkey := Map()
+  for entry in shortcutConfig {
+    if (entry["hotkey"] == "") {
+      continue
+    }
+    if (entriesByHotkey.Has(entry["hotkey"])) {
+      entriesByHotkey[entry["hotkey"]].Push(entry)
+    } else {
+      entriesByHotkey[entry["hotkey"]] := [entry]
+    }
+  }
+  for hotkey, entries in entriesByHotkey {
+    _setupShortcut(entries)
+  }
+}
+_setupShortcut(entries) {
+  global config
+  ; store the window Id in closure
+  wndIds := entries.Map(entry => false)
+  ; Hotkey handler
+  onPress(key) {
+    entries.Map((entry, i) {
+      wndIds[i] := toggleWnd(wndIds[i], entry)
+    })
+  }
+  MyHotkey(entries[1]["hotkey"], onPress)
+} */

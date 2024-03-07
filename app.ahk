@@ -1,4 +1,4 @@
-﻿#SingleInstance Force
+#SingleInstance Force
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
 SetTitleMatchMode("Fast")
@@ -38,6 +38,8 @@ class Configurator {
   _skeleton() {
     this.guiWidth := 450
     this.guiHeight := 300
+    this.titleRunning := "呼来唤去 - 运行中"
+    this.titleIdle := "呼来唤去"
     guiSizeOpt := "MinSize" . this.guiWidth + 10 . "x" . this.guiHeight + 5
       . " MaxSize" . this.guiWidth + 10 . "x" . 9999
     ; Set gui Icon
@@ -48,7 +50,7 @@ class Configurator {
       " " WS_VSCROLL
       " " guiSizeOpt
       ; " +Scroll",
-      , "呼来唤去",)
+      , this.isMainRunning ? this.titleRunning : this.titleIdle,)
     this.gui.MarginX := 2
     this.gui.MarginY := 5
 
@@ -379,6 +381,7 @@ class Configurator {
       this.isMainRunning := true
       if (this.HasProp("gui")) {
         this.gui.MenuBar.Rename(this.STATE_IDLE, this.STATE_RUNNING)
+        WinSetTitle(this.titleRunning, this.gui)
       }
     }
   }
@@ -388,6 +391,7 @@ class Configurator {
       this.isMainRunning := false
       if (this.HasProp("gui")) {
         this.gui.MenuBar.Rename(this.STATE_RUNNING, this.STATE_IDLE)
+        WinSetTitle(this.titleIdle, this.gui)
       }
     }
   }

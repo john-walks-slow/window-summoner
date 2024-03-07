@@ -36,8 +36,8 @@ setupWorkspace(workspaceConfig) {
     global currentWorkspace
     global workspaces
     DetectHiddenWindows(false)
-    workspaces[currentWorkspace] := WinGetList().Filter((wnd) =>
-      ["TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"].IndexOf(WinGetClass(wnd)) == 0)
+    workspaces[currentWorkspace] := WinGetList(, , "\A\Z").Filter((wnd) =>
+      ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"].IndexOf(WinGetClass(wnd)) == 0)
     DetectHiddenWindows(true)
     for (wnd in workspaces[currentWorkspace]) {
       OutputDebug(wnd " | " WinGetClass(wnd) " | " WinGetTitle(wnd) "`n")

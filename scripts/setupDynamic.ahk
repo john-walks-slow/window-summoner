@@ -5,29 +5,25 @@ setupDynamic(dynamicConfig) {
   if (!dynamicConfig["enable"]) {
     return
   }
-  for key in dynamicConfig["suffixs"] {
-    _setupDynamicBinding(key, dynamicConfig)
+  for suffix in dynamicConfig["suffixs"] {
+    _setupDynamicBinding(suffix, dynamicConfig)
   }
 }
 
-_setupDynamicBinding(key, dynamicConfig) {
-  mainShortcut := joinStrs(dynamicConfig["mod_main"]) . key
-  bindShortcut := joinStrs(dynamicConfig["mod_bind"]) . key
+_setupDynamicBinding(suffix, dynamicConfig) {
+  mainShortcut := JoinStrs(dynamicConfig["mod_main"]) . suffix
+  bindShortcut := JoinStrs(dynamicConfig["mod_bind"]) . suffix
   id := false
-  MyHotkey(bindShortcut, (key) {
+  MyHotkey(bindShortcut, (suffix) {
     try {
       oldId := id
       id := WinGetActiveID()
     }
-    global wndHandlers
-    if (oldId && wndHandlers.Has(String(oldId))) {
-      handler := wndHandlers.Get(String(oldId))
-      try {
-        OnExit(handler, 0)
-        OnError(handler, 0)
-        handler("", "")
-        WinActivate(id)
-      }
+    if (dynamicConfig["showTip"])
+      TimedTip("绑定 " FormatHotkeyShorthand(mainShortcut) " 至 " WinGetTitle(id) || WinGetClass(id))
+    if (oldId) {
+      popWndHandler(oldId)
+      WinActivate(id)
     }
   })
   MyHotkey(mainShortcut, (key) {

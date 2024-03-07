@@ -3,7 +3,7 @@
 # 呼来唤去 - 一键显隐窗口
 
 <figure>
-    <img width="600" src="misc/demo1.gif">
+    <img src="misc/demo1.gif">
     <!-- <figcaption>演示</figcaption> -->
 </figure>
 
@@ -25,19 +25,19 @@
 ## 截图
 
 <figure>
-    <img width="300" src="misc/screenshot1.png">
+    <img width="380" src="misc/screenshot1.png">
     <!-- <figcaption>召唤配置</figcaption> -->
 </figure>
 <figure>
-    <img width="300" src="misc/screenshot2.png">
+    <img width="380" src="misc/screenshot2.png">
     <!-- <figcaption>绑定配置</figcaption> -->
 </figure>
 <figure>
-    <img width="300" src="misc/screenshot3.png">
+    <img width="380" src="misc/screenshot3.png">
     <!-- <figcaption>工作区配置</figcaption> -->
 </figure>
 <figure>
-    <img width="300" src="misc/screenshot4.png">
+    <img width="380" src="misc/screenshot4.png">
     <!-- <figcaption>设置</figcaption> -->
 </figure>
 

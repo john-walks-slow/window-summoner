@@ -9,6 +9,9 @@ activatedWnd := false
 
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
+  if (!IsSet(entry)) {
+    return false
+  }
   static pending := false
   ; Prevent concurrent actions only if singleActiveWindow is on
   ; * Every hotkey is running on a separate thread, so we need to use a static variable to keep track of the state
@@ -20,14 +23,23 @@ toggleWnd(id, entry := unset) {
   global activatedWnd
   global config
 
-  ; Id valid
-  if (id && WinExist(id)) {
+  ; Try to capture window
+  if (!id || !WinExist(id)) {
+    id := _capture()
+  }
+  if (!id) {
+    ; If still not found, run the program
+    _hideActive()
+    id := _run()
+  } else {
+    ; Otherwise, toggle it
     if (!config["misc"]["minimizeInstead"]) {
       ; Hide / Show
       isVisible := WinGetStyle(id) & 0x10000000
       if (isVisible && WinActive(id)) {
         _hide(id, true)
       } else {
+        _hideActive()
         _show(id)
       }
     } else {
@@ -35,54 +47,47 @@ toggleWnd(id, entry := unset) {
       if (WinActive(id)) {
         _minimize(id)
       } else {
+        _hideActive()
         _restore(id)
       }
     }
   }
-  ; Id invalid & entry provided
-  else if (IsSet(entry)) {
-    if (config["misc"]["singleActiveWindow"] && activatedWnd) {
-      if (!config["misc"]["minimizeInstead"])
-        _hide(activatedWnd)
-      else
-        _minimize(activatedWnd)
-    }
-    _run()
-  }
+  pending := false
+  return id
 
+  _capture() {
+    ; Try to match existing window
+    if (config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
+      return WinGetID(entry["wnd_title"])
+    }
+  }
   _run() {
+    if (entry["run"] == "") {
+      return
+    }
     Run(entry["run"])
     TIMEOUT := entry["wnd_title"] ? 30000 : 5000
     INTERVAL := 50
-    ; Try to match existing window
-    if (config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
-      id := WinGetID(entry["wnd_title"])
-    } else {
-      ; If not found, wait for a new window
-      currentWnd := WinGetActiveID()
-      currentTime := A_TickCount
-      while (A_TickCount - currentTime < TIMEOUT) {
-        newWnd := WinGetActiveID()
-        ; We only care about new windows
-        if (newWnd != currentWnd) {
-          ; If wnd_title is provided, match it
-          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
-            id := newWnd
-            break
-          }
+    ; If not found, wait for a new window
+    currentWnd := WinGetActiveID()
+    currentTime := A_TickCount
+    while (A_TickCount - currentTime < TIMEOUT) {
+      newWnd := WinGetActiveID()
+      ; We only care about new windows
+      if (newWnd != currentWnd) {
+        ; If wnd_title is provided, match it
+        if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+          activatedWnd := newWnd
+          return newWnd
         }
-        Sleep(INTERVAL)
       }
-    }
-    ; Update activatedWnd
-    if (id) {
-      activatedWnd := id
+      Sleep(INTERVAL)
     }
   }
 
   _hide(id, restoreLastFocus := false) {
     try {
-      (config["misc"]["transitionAnim"]) && WinHide(id)
+      ; (config["misc"]["transitionAnim"]) && WinHide(id)
       if (restoreLastFocus) {
         (config["misc"]["transitionAnim"]) && WinMinimize(id)
         (!config["misc"]["transitionAnim"]) && Send("!{Esc}")
@@ -109,10 +114,6 @@ toggleWnd(id, entry := unset) {
   }
 
   _show(id) {
-    ; Hide other active windows
-    if (config["misc"]["singleActiveWindow"] && activatedWnd && activatedWnd !== id) {
-      _hide(activatedWnd)
-    }
     try {
       WinShow(id)
       (!config["misc"]["transitionAnim"]) && WinActivate(id)
@@ -128,21 +129,20 @@ toggleWnd(id, entry := unset) {
   }
   _restore(id) {
     try {
-      if (config["misc"]["singleActiveWindow"]) {
-        if (activatedWnd && activatedWnd !== id) {
-          _minimize(activatedWnd)
-        }
-      }
-    }
-    try {
       if (WinGetMinMax(id) == -1)
         WinRestore(id)
       WinActivate(id)
       activatedWnd := id
     }
   }
-  pending := false
-  return id
+  _hideActive() {
+    if (config["misc"]["singleActiveWindow"] && activatedWnd) {
+      if (!config["misc"]["minimizeInstead"])
+        _hide(activatedWnd)
+      else
+        _minimize(activatedWnd)
+    }
+  }
 }
 clearWndHandlers() {
   global wndHandlers

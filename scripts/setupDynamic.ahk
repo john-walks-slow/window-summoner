@@ -19,11 +19,13 @@ _setupDynamicBinding(suffix, dynamicConfig) {
       oldId := id
       id := WinGetActiveID()
     }
-    if (dynamicConfig["showTip"])
-      TimedTip("绑定 " FormatHotkeyShorthand(mainShortcut) " 至 " WinGetTitle(id) || WinGetClass(id))
-    if (oldId) {
-      popWndHandler(oldId)
-      WinActivate(id)
+    if (id && IsUserWindow(id)) {
+      if (dynamicConfig["showTip"])
+        TimedTip("绑定 " FormatHotkeyShorthand(mainShortcut) " 至 " WinGetTitle(id) || WinGetClass(id))
+      if (oldId) {
+        popWndHandler(oldId)
+        WinActivate(id)
+      }
     }
   })
   MyHotkey(mainShortcut, (key) {

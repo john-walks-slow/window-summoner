@@ -134,7 +134,7 @@ WinGetActiveID() {
   try {
     return WinGetID("A")
   } catch Error as e {
-    return 0
+    return false
   }
 }
 
@@ -152,4 +152,10 @@ CallAsync(func, args*) {
 
 Call(func, args*) {
   return func.Call(args*)
+}
+
+FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"]
+
+IsUserWindow(id) {
+  return FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0
 }

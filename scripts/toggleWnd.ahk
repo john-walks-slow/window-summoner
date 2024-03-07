@@ -69,7 +69,7 @@ toggleWnd(id, entry := unset) {
       while (A_TickCount - currentTime < TIMEOUT) {
         newWnd := WinGetActiveID()
         ; We only care about new windows
-        if (newWnd != currentWnd) {
+        if (newWnd && newWnd != currentWnd) {
           ; If wnd_title is provided, match it
           if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
             activatedWnd := newWnd
@@ -82,6 +82,7 @@ toggleWnd(id, entry := unset) {
   }
 
   _hide(id, restoreLastFocus := false) {
+    ; OutputDebug(WinGetTitle(id) "`n")
     try {
       if (restoreLastFocus) {
         if (config["misc"]["transitionAnim"]) {
@@ -138,6 +139,7 @@ addWndHandler(id) {
         isVisible := WinGetStyle(id) & 0x10000000
         if (!isVisible) {
           WinMinimize(id)
+          WinShow(id)
         }
       }
     }

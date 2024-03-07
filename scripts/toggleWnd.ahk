@@ -9,9 +9,6 @@ activatedWnd := false
 
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
-  if (!IsSet(entry)) {
-    return false
-  }
   static pending := false
   ; Prevent concurrent actions only if singleActiveWindow is on
   ; * Every hotkey is running on a separate thread, so we need to use a static variable to keep track of the state
@@ -57,31 +54,30 @@ toggleWnd(id, entry := unset) {
 
   _capture() {
     ; Try to match existing window
-    if (config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
+    if (entry && config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
       return WinGetID(entry["wnd_title"])
     }
   }
   _run() {
-    if (entry["run"] == "") {
-      return
-    }
-    Run(entry["run"])
-    TIMEOUT := entry["wnd_title"] ? 30000 : 5000
-    INTERVAL := 50
-    ; If not found, wait for a new window
-    currentWnd := WinGetActiveID()
-    currentTime := A_TickCount
-    while (A_TickCount - currentTime < TIMEOUT) {
-      newWnd := WinGetActiveID()
-      ; We only care about new windows
-      if (newWnd != currentWnd) {
-        ; If wnd_title is provided, match it
-        if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
-          activatedWnd := newWnd
-          return newWnd
+    if (entry && entry["run"] == "") {
+      Run(entry["run"])
+      TIMEOUT := entry["wnd_title"] ? 30000 : 5000
+      INTERVAL := 50
+      ; If not found, wait for a new window
+      currentWnd := WinGetActiveID()
+      currentTime := A_TickCount
+      while (A_TickCount - currentTime < TIMEOUT) {
+        newWnd := WinGetActiveID()
+        ; We only care about new windows
+        if (newWnd != currentWnd) {
+          ; If wnd_title is provided, match it
+          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+            activatedWnd := newWnd
+            return newWnd
+          }
         }
+        Sleep(INTERVAL)
       }
-      Sleep(INTERVAL)
     }
   }
 
@@ -95,22 +91,7 @@ toggleWnd(id, entry := unset) {
       WinHide(id)
       activatedWnd := false
     }
-    ; Handle exit, try to reuse handler
-    if (!wndHandlers.Has(String(id))) {
-      ; id is remembered in closure
-      exitHandler := (e, c) {
-        try {
-          isVisible := WinGetStyle(id) & 0x10000000
-          if (!isVisible) {
-            WinMinimize(id)
-          }
-        }
-      }
-      ; Keep a record of bound exitHandlers
-      wndHandlers.Set(String(id), exitHandler)
-      OnExit(exitHandler, 1)
-      OnError(exitHandler, 1)
-    }
+    addWndHandler(id)
   }
 
   _show(id) {
@@ -144,9 +125,30 @@ toggleWnd(id, entry := unset) {
     }
   }
 }
+
+addWndHandler(id) {
+  global wndHandlers
+  ; Handle exit, try to reuse handler
+  if (!wndHandlers.Has(String(id))) {
+    ; id is remembered in closure
+    exitHandler := (e, c) {
+      try {
+        isVisible := WinGetStyle(id) & 0x10000000
+        if (!isVisible) {
+          WinMinimize(id)
+        }
+      }
+    }
+    ; Keep a record of bound exitHandlers
+    wndHandlers.Set(String(id), exitHandler)
+    OnExit(exitHandler, 1)
+    OnError(exitHandler, 1)
+  }
+}
 clearWndHandlers() {
   global wndHandlers
   global activatedWnd
+
   activatedWnd := false
   for id, handler in wndHandlers {
     try {
@@ -156,4 +158,15 @@ clearWndHandlers() {
     }
   }
   wndHandlers := Map()
+}
+
+popWndHandler(id) {
+  if (wndHandlers.Has(String(id))) {
+    handler := wndHandlers.Get(String(id))
+    try {
+      OnExit(handler, 0)
+      OnError(handler, 0)
+      handler("", "")
+    }
+  }
 }

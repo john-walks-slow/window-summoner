@@ -59,7 +59,7 @@ toggleWnd(id, entry := unset) {
     }
   }
   _run() {
-    if (entry && entry["run"] == "") {
+    if (entry && entry["run"] != "") {
       Run(entry["run"])
       TIMEOUT := entry["wnd_title"] ? 30000 : 5000
       INTERVAL := 50
@@ -83,12 +83,13 @@ toggleWnd(id, entry := unset) {
 
   _hide(id, restoreLastFocus := false) {
     try {
-      ; (config["misc"]["transitionAnim"]) && WinHide(id)
       if (restoreLastFocus) {
-        (config["misc"]["transitionAnim"]) && WinMinimize(id)
-        (!config["misc"]["transitionAnim"]) && Send("!{Esc}")
+        if (config["misc"]["transitionAnim"]) {
+          Call(WinMinimize, id)
+        } else
+          Send("!{Esc}")
       }
-      WinHide(id)
+      CallAsync(WinHide, id)
       activatedWnd := false
     }
     addWndHandler(id)
@@ -96,23 +97,22 @@ toggleWnd(id, entry := unset) {
 
   _show(id) {
     try {
-      WinShow(id)
-      (!config["misc"]["transitionAnim"]) && WinActivate(id)
-      (config["misc"]["transitionAnim"]) && WinActivate(id)
+      CallAsync(WinShow, id)
+      CallAsync(WinActivate, id)
       activatedWnd := id
     }
   }
   _minimize(id) {
     try {
-      WinMinimize(id)
+      CallAsync(WinMinimize, id)
       activatedWnd := false
     }
   }
   _restore(id) {
     try {
       if (WinGetMinMax(id) == -1)
-        WinRestore(id)
-      WinActivate(id)
+        CallAsync(WinRestore, id)
+      CallAsync(WinActivate, id)
       activatedWnd := id
     }
   }

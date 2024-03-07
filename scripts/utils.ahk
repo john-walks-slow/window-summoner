@@ -1,4 +1,4 @@
-﻿throwError(title, e?) {
+﻿ThrowError(title, e?) {
   if (!A_IsCompiled) {
     if (IsSet(e)) {
       throw e
@@ -31,48 +31,48 @@ RegExMatchAll(str, regex, isGroup := true) {
 }
 
 
-hasVal(array, val) {
+HasVal(array, val) {
   return array.IndexOf(val) ? 1 : 0
 }
 
-deleteVal(array, val) {
+DeleteVal(array, val) {
   loc := array.IndexOf(val)
   if (loc)
     array.RemoveAt(loc)
   return array
 }
 
-pushDedupe(array, val) {
-  if (!hasVal(array, val))
+PushDedupe(array, val) {
+  if (!HasVal(array, val))
     array.Push(val)
   return array
 }
 
-insertDedupe(array, val) {
-  if (!hasVal(array, val))
+InsertDedupe(array, val) {
+  if (!HasVal(array, val))
     array.InsertAt(0, val)
   return array
 }
 
-dedupe(array) {
+Dedupe(array) {
   deduped := []
   for value in array
-    insertDedupe(deduped, value)
+    InsertDedupe(deduped, value)
   return deduped
 }
 
-lastOf(array) {
+LastOf(array) {
   return array.Length > 0 ? array[array.Length] : 0
 }
 
-joinStrs(array, delimiter := "") {
+JoinStrs(array, delimiter := "") {
   str := ""
   for index, value in array
     str .= (index == 1) ? value : delimiter . value
   return str
 }
 
-s(style) {
+S(style) {
   str := ""
   for key, value in style.OwnProps()
     str .= String(key) . String(value) . " "
@@ -136,4 +136,8 @@ WinGetActiveID() {
   } catch Error as e {
     return 0
   }
+}
+
+TimedTip(text, timeout := 1000) {
+  ToolTip(text, A_ScreenWidth, A_ScreenHeight) && SetTimer(() => ToolTip(), -timeout)
 }

@@ -1,6 +1,6 @@
 <img align="left" width="75" height="75" src="misc/icon_480.png">
 
-# 呼来唤去 - 一键显隐窗口
+# 呼来唤去 - 为任意程序、窗口、窗口组设置老板键
 
 <figure>
     <img src="misc/demo1.gif">

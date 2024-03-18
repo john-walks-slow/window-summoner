@@ -1,6 +1,6 @@
 <img align="left" width="75" height="75" src="misc/icon_480.png">
 
-# 呼来唤去 — 全能老板键
+# 呼来唤去 — 全局老板键
 
 <figure>
     <img src="misc/demo1.gif">
@@ -23,7 +23,7 @@
 - 关闭过渡动画
 
 ## 截图
-
+<div>
 <figure>
     <img width="380" src="misc/screenshot1.png">
     <!-- <figcaption>召唤配置</figcaption> -->
@@ -40,6 +40,7 @@
     <img width="380" src="misc/screenshot4.png">
     <!-- <figcaption>设置</figcaption> -->
 </figure>
+</div>
 
 ## 下载
 

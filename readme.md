@@ -47,3 +47,9 @@
 > 更新时请覆盖上一个版本，配置会保留
 
 [![](https://img.shields.io/badge/download-latest-orange.svg)](https://github.com/john-walks-slow/window-summoner/releases/latest)
+
+## Todos
+- [] 切换工作区时复原窗口位置、大小和状态
+- [] 为工作区配置白名单
+- [] 更丰富的捕获方式配置，支持匹配窗口标题、类名、进程名、设置超时时间
+- [] 用 GUI 嗅探窗口信息

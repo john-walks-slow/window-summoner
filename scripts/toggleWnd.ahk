@@ -64,7 +64,7 @@ toggleWnd(id, entry := unset) {
       currentTime := A_TickCount
       Run(entry["run"], , , &pid)
       TIMEOUT := entry["wnd_title"] ? 30000 : 5000
-      INTERVAL := 50
+      INTERVAL := 100
       ; If not found, wait for a new window
       while (A_TickCount - currentTime < TIMEOUT) {
         newWnd := WinGetTop()

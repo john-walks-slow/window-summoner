@@ -60,20 +60,22 @@ toggleWnd(id, entry := unset) {
   }
   _run() {
     if (entry && entry["run"] != "") {
-      Run(entry["run"])
+      currentWnd := WinGetTop()
+      currentTime := A_TickCount
+      Run(entry["run"], , , &pid)
       TIMEOUT := entry["wnd_title"] ? 30000 : 5000
       INTERVAL := 50
       ; If not found, wait for a new window
-      currentWnd := WinGetActiveID()
-      currentTime := A_TickCount
       while (A_TickCount - currentTime < TIMEOUT) {
-        newWnd := WinGetActiveID()
+        newWnd := WinGetTop()
         ; We only care about new windows
         if (newWnd && newWnd != currentWnd) {
           ; If wnd_title is provided, match it
-          if (!entry["wnd_title"] || WinGetTitle(newWnd) ~= entry["wnd_title"]) {
-            activatedWnd := newWnd
-            return newWnd
+          if ((!entry["wnd_title"] && IsUserWindow(newWnd)) ||
+            WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+              CallAsync(WinActivate, newWnd)
+              activatedWnd := newWnd
+              return newWnd
           }
         }
         Sleep(INTERVAL)

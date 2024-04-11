@@ -1,5 +1,3 @@
-#Include toggleWnd.ahk
-
 global currentWorkspace, workspaces
 
 clearWorkspace()

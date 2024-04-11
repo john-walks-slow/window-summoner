@@ -159,3 +159,10 @@ FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland
 IsUserWindow(id) {
   return FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0
 }
+
+WinGetTop() {
+  DetectHiddenWindows(false)
+  wndId := WinGetID(".+")
+  DetectHiddenWindows(true)
+  return wndId
+}

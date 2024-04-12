@@ -37,7 +37,7 @@ setupWorkspace(workspaceConfig) {
     workspaces[currentWorkspace] := WinGetList(, , "\A\Z").Filter((wnd) => IsUserWindow(wnd))
     DetectHiddenWindows(true)
     for (wnd in workspaces[currentWorkspace]) {
-      OutputDebug(wnd " | " WinGetClass(wnd) " | " WinGetTitle(wnd) "`n")
+      ; OutputDebug(wnd " | " WinGetClass(wnd) " | " WinGetTitle(wnd) "`n")
       CallAsync(WinHide, wnd)
       addWndHandler(wnd)
     }
@@ -45,6 +45,8 @@ setupWorkspace(workspaceConfig) {
       wnd := workspaces[targetWorkspace][workspaces[targetWorkspace].Length - A_Index + 1]
       CallAsync(WinShow, wnd)
     }
+    Sleep(100)
+    (workspaces[targetWorkspace].length > 0) && CallAsync(WinActivate, workspaces[targetWorkspace][1])
     currentWorkspace := targetWorkspace
   }
 }

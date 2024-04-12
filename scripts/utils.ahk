@@ -164,7 +164,8 @@ IsUserWindow(id) {
 WinGetTop() {
   DetectHiddenWindows(false)
   wndList := WinGetList(".+")
-  wndId := wndList?.[wndList.FindIndex(IsUserWindow)]
+  targetIndex := wndList.FindIndex(IsUserWindow)
+  wndId := targetIndex > 0 ? wndList[targetIndex] : false
   DetectHiddenWindows(true)
   return wndId
 }

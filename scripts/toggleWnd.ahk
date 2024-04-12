@@ -34,7 +34,7 @@ toggleWnd(id, entry := unset) {
       ; Hide / Show
       isVisible := WinGetStyle(id) & 0x10000000
       if (isVisible && WinActive(id)) {
-        _hide(id, true)
+        _hide(id, true, true)
       } else {
         _hideActive(oldActivatedWnd)
         _show(id)
@@ -42,7 +42,7 @@ toggleWnd(id, entry := unset) {
     } else {
       ; Minimize / Restore
       if (WinActive(id)) {
-        _minimize(id)
+        _minimize(id, true)
       } else {
         _hideActive(oldActivatedWnd)
         _restore(id)
@@ -83,7 +83,7 @@ toggleWnd(id, entry := unset) {
     }
   }
 
-  _hide(id, restoreLastFocus := false) {
+  _hide(id, restoreLastFocus := false, clearActivatedWnd := false) {
     ; OutputDebug(WinGetTitle(id) "`n")
     try {
       if (restoreLastFocus) {
@@ -94,7 +94,8 @@ toggleWnd(id, entry := unset) {
           Send("!{Esc}")
       }
       CallAsync(WinHide, id)
-      activatedWnd := false
+      if (clearActivatedWnd)
+        activatedWnd := false
     }
     addWndHandler(id)
   }
@@ -107,10 +108,11 @@ toggleWnd(id, entry := unset) {
       activatedWnd := id
     }
   }
-  _minimize(id) {
+  _minimize(id, clearActivatedWnd := false) {
     try {
       CallAsync(WinMinimize, id)
-      activatedWnd := false
+      if (clearActivatedWnd)
+        activatedWnd := false
     }
   }
   _restore(id) {
@@ -124,7 +126,7 @@ toggleWnd(id, entry := unset) {
   _hideActive(target := activatedWnd) {
     if (config["misc"]["singleActiveWindow"] && target) {
       if (!config["misc"]["minimizeInstead"])
-        _hide(target)
+        _hide(target, false, false)
       else
         _minimize(target)
     }

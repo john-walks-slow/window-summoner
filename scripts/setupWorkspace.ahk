@@ -17,7 +17,7 @@ setupWorkspace(workspaceConfig) {
   }
   _setupWorkspace(suffix, workspaceConfig) {
     switchShortcut := joinStrs(workspaceConfig["mod"]) . suffix
-    workspaces.Set(suffix, [])
+    workspaces.Set(suffix, { list: [], active: false })
     MyHotkey(switchShortcut, (key) {
       _switchToWorkspace(suffix)
     })
@@ -33,20 +33,23 @@ setupWorkspace(workspaceConfig) {
 
     global currentWorkspace
     global workspaces
+    current := workspaces[currentWorkspace]
+    target := workspaces[targetWorkspace]
     DetectHiddenWindows(false)
-    workspaces[currentWorkspace] := WinGetList(, , "\A\Z").Filter((wnd) => IsUserWindow(wnd))
+    current.list := WinGetList(, , "\A\Z").Filter((wnd) => IsUserWindow(wnd))
     DetectHiddenWindows(true)
-    for (wnd in workspaces[currentWorkspace]) {
+    current.active := WinGetActiveID()
+    for (wnd in current.list) {
       ; OutputDebug(wnd " | " WinGetClass(wnd) " | " WinGetTitle(wnd) "`n")
       CallAsync(WinHide, wnd)
       addWndHandler(wnd)
     }
-    loop (workspaces[targetWorkspace].Length) {
-      wnd := workspaces[targetWorkspace][workspaces[targetWorkspace].Length - A_Index + 1]
+    loop (target.list.Length) {
+      wnd := target.list[target.list.Length - A_Index + 1]
       CallAsync(WinShow, wnd)
     }
     Sleep(100)
-    (workspaces[targetWorkspace].length > 0) && CallAsync(WinActivate, workspaces[targetWorkspace][1])
+    (target.active) && CallAsync(WinActivate, target.active)
     currentWorkspace := targetWorkspace
   }
 }

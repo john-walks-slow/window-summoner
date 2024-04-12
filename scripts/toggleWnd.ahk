@@ -19,15 +19,15 @@ toggleWnd(id, entry := unset) {
   global wndHandlers
   global activatedWnd
   global config
-
   ; Try to capture window
   if (!id || !WinExist(id)) {
     id := _capture()
   }
+  oldActivatedWnd := activatedWnd
   if (!id) {
     ; If still not found, run the program
-    _hideActive()
     id := _run()
+    _hideActive(oldActivatedWnd)
   } else {
     ; Otherwise, toggle it
     if (!config["misc"]["minimizeInstead"]) {
@@ -36,7 +36,7 @@ toggleWnd(id, entry := unset) {
       if (isVisible && WinActive(id)) {
         _hide(id, true)
       } else {
-        _hideActive()
+        _hideActive(oldActivatedWnd)
         _show(id)
       }
     } else {
@@ -44,7 +44,7 @@ toggleWnd(id, entry := unset) {
       if (WinActive(id)) {
         _minimize(id)
       } else {
-        _hideActive()
+        _hideActive(oldActivatedWnd)
         _restore(id)
       }
     }
@@ -121,12 +121,12 @@ toggleWnd(id, entry := unset) {
       activatedWnd := id
     }
   }
-  _hideActive() {
-    if (config["misc"]["singleActiveWindow"] && activatedWnd) {
+  _hideActive(target := activatedWnd) {
+    if (config["misc"]["singleActiveWindow"] && target) {
       if (!config["misc"]["minimizeInstead"])
-        _hide(activatedWnd)
+        _hide(target)
       else
-        _minimize(activatedWnd)
+        _minimize(target)
     }
   }
 }

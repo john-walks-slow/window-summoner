@@ -157,12 +157,14 @@ Call(func, args*) {
 FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"]
 
 IsUserWindow(id) {
-  return FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0
+  return (FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0) && !WinGetAlwaysOnTop(id)
 }
 
+; Get the topmost user window that is not always on top
 WinGetTop() {
   DetectHiddenWindows(false)
-  wndId := WinGetID(".+")
+  wndList := WinGetList(".+")
+  wndId := wndList?.[wndList.FindIndex(IsUserWindow)]
   DetectHiddenWindows(true)
   return wndId
 }

@@ -296,7 +296,7 @@ class Configurator {
       CAPTURE_MODES := ["自动", "匹配进程", "匹配进程+标题"]
       captureButton := this.gui.AddButton(S({ x: c3, y: "s", w: w3, r: 1, "-wrap -VScroll": "" }), CAPTURE_MODES[entryCapture["mode"]])
       captureButton.onEvent("Click", (target, info) {
-        captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "捕捉方式")
+        captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "匹配方式")
         this.subGuis.Push(captureWnd)
         captureWnd.MarginX := 10
         captureWnd.MarginY := 10
@@ -468,13 +468,13 @@ class Configurator {
     this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "勾选后，会尝试在现有窗口中捕捉目标窗口，而非总是启动新的程序实例（仅在非自动模式中有效）。`n"
+          "勾选后，会尝试在现有窗口中匹配目标窗口，而非总是启动新的程序实例（仅在非自动模式中有效）。`n"
           , "帮助")
       }
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "使用旧版捕捉方式", miscConfig, "alternativeCapture")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "使用旧版匹配方式", miscConfig, "alternativeCapture")
     this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(

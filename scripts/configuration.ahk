@@ -21,11 +21,7 @@ CONFIG_DEFAULT := UMap(
     "suffixs", ["[", "]"],
   ),
   "shortcuts", UArray(
-    UMap(
-      "hotkey", "",
-      "run", "",
-      "wnd_title", ""
-    ),
+    makeShortcut()
   ),
   "misc", UMap(
     "autoStart", false,
@@ -35,30 +31,64 @@ CONFIG_DEFAULT := UMap(
     "singleActiveWindow", false,
     "minimizeInstead", false,
     "transitionAnim", true,
+    "alternativeCapture", false
+    ; "filteredWindowClasses", UArray(
+    ; "DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"
+    ; )
   ),
 )
+
+makeShortcut() {
+  return UMap(
+    "hotkey", "",
+    "run", "",
+    "capture", UMap(
+      "mode", 1, ;1:auto 2:process 3:process+title
+      "process", "",
+      "title", "",
+    )
+  )
+}
+
 checkConfig(config) {
-  _normalizeConfig(config, "dynamic")
-  _normalizeConfig(config, "workspace")
-  _normalizeConfig(config, "misc")
 
-  for (shortcutConfig in config.Get("shortcuts", [])) {
-    _mergeConfig(shortcutConfig, CONFIG_DEFAULT["shortcuts"][1])
-  }
+  _mergeConfig(config, CONFIG_DEFAULT)
 
-  _normalizeConfig(config, key) {
-    if (!config.Has(key)) {
-      config.Set(key, CONFIG_DEFAULT[key])
-    } else {
-      _mergeConfig(config.Get(key), CONFIG_DEFAULT[key])
+  ; Migrate from wnd_title to capture.title
+  for (s in config["shortcuts"]) {
+    if (s.Get("wnd_title", "") !== "") {
+      s["capture"]["mode"] := 3
+      s["capture"]["process"] := ".*"
+      s["capture"]["title"] := s["wnd_title"]
     }
+    s.Delete("wnd_title")
   }
+
   _mergeConfig(entry, default) {
-    for sKey, sValue in default {
-      if (!entry.Has(sKey)) {
-        entry.Set(sKey, sValue)
+    if (Type(entry) !== Type(default)) {
+      entry := ShallowClone(default)
+    } else if (Type(default) == "Map") {
+      for (dk, dv in default) {
+        if (!entry.Has(dk)) {
+          entry[dk] := ShallowClone(dv)
+        }
+        else if (Type(dv) == "Map" || Type(dv) == "Array") {
+          if (Type(dv) !== Type(entry[dk])) {
+            entry[dk] := ShallowClone(dv)
+          } else _mergeConfig(entry[dk], dv)
+        }
+      }
+    } else if (Type(default) == "Array") {
+      if (Type(default[1]) == "Map") {
+        for (ek, ev in entry) {
+          if (Type(ev) !== Type(default[1])) {
+            entry.Delete(ek)
+          } else _mergeConfig(ev, default[1])
+        }
       }
     }
+
+
   }
 }
 readConfig() {

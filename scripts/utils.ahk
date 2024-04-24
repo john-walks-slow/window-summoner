@@ -183,15 +183,15 @@ NotSystem(id) {
 ; 其余模式忽略 aot
 
 ; Get the topmost user window (ignoring aot / hidden / system windows)
-WinGetUser(title := ".+", ignoreAot := true, ignoreHidden := true) {
-  wndList := WinGetUserList(title, ignoreAot, ignoreHidden)
+WinGetUser(title := ".+", ignoreAot := true, ignoreHidden := true, ignoreSystem := true) {
+  wndList := WinGetUserList(title, ignoreAot, ignoreHidden, ignoreSystem)
   return wndList.Length > 0 ? wndList[1] : false
 }
 
-WinGetUserList(title := ".+", ignoreAot := true, ignoreHidden := true) {
+WinGetUserList(title := ".+", ignoreAot := true, ignoreHidden := true, ignoreSystem := true) {
   if (ignoreHidden)
     DetectHiddenWindows(false)
-  wndList := WinGetList(title USER_WINDOW_FILTER)
+  wndList := WinGetList(title (ignoreSystem ? USER_WINDOW_FILTER : ""))
   DetectHiddenWindows(true)
   if (ignoreAot)
     wndList := wndList.Filter(NotAOT)

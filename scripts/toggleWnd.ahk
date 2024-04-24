@@ -79,14 +79,13 @@ toggleWnd(id, entry := unset) {
     return target
   }
   _run() {
-    if (running)
-      return id
+    ; if (running)
+    ; return id
     running := true
     if (entry && entry["run"] != "") {
       currentTime := A_TickCount
-      TIMEOUT := entry["capture"]["mode"] == 1 ? 5000 : 20000
+      TIMEOUT := entry["capture"]["mode"] == 1 ? 6000 : 10000
       INTERVAL := 50
-      Run(entry["run"], , , &pid)
       winTitle := ".+"
       ignoreMiscWindows := true
       switch (entry["capture"]["mode"]) {
@@ -99,6 +98,7 @@ toggleWnd(id, entry := unset) {
       if (config["misc"]["alternativeCapture"]) {
         ; 旧方案：捕捉出现在上方的第一个有标题、非置顶新窗口
         currentWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+        Run(entry["run"], , , &pid)
         while (A_TickCount - currentTime < TIMEOUT) {
           newWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
           if (newWnd && newWnd != currentWnd) {
@@ -113,6 +113,7 @@ toggleWnd(id, entry := unset) {
         ;; pro：如果程序没有启动到最上方，也能找到。
         ;; pro：启动过程中焦点改变，也能找到。
         currentWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+        Run(entry["run"], , , &pid)
         while (A_TickCount - currentTime < TIMEOUT) {
           newWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
           ; if (newWndList.Length == currentWndList.Length) {

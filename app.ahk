@@ -311,8 +311,9 @@ class Configurator {
             MsgBox(
               "【自动】无需配置，自动捕捉出现在上方的有标题非置顶新窗口。`n`n"
               "【匹配进程】稳定性更高，且支持匹配已经打开的窗口。`n`n"
-              "【匹配进程+标题】在匹配进程基础上匹配窗口标题（适合web应用等情况）。`n`n`n"
-              "进程与标题为正则表达式，用 .* 表示任意长度的通配"
+              "【匹配进程+标题】在匹配进程基础上匹配窗口标题（适合web应用等情况）。`n"
+              "除【匹配进程+标题】以外的模式会忽略 置顶/隐藏/系统 窗口。`n`n`n"
+              "进程与标题为正则表达式，用 .* 表示任意长度的通配。"
               , "帮助")
           }
         )
@@ -463,12 +464,11 @@ class Configurator {
     )
     this.gui.AddText("xs y+20 c676767", "行为")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "启用过渡动画", miscConfig, "transitionAnim")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕捉并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "召唤已经存在的窗口", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "勾选后，会根据『窗口标题正则』在现有窗口中尝试捕捉目标窗口。`n"
-          "若取消勾选，将仅仅捕捉由『呼来唤去』启动的程序窗口。`n"
+          "勾选后，会在现有窗口中尝试捕捉目标窗口，而非总是启动新的程序实例。`n"
           , "帮助")
       }
     )

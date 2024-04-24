@@ -1,4 +1,5 @@
-﻿ThrowError(title, e?) {
+﻿SetTitleMatchMode("RegEx")
+ThrowError(title, e?) {
   if (!A_IsCompiled) {
     if (IsSet(e)) {
       throw e
@@ -67,8 +68,9 @@ LastOf(array) {
 
 JoinStrs(array, delimiter := "") {
   str := ""
-  for index, value in array
+  for index, value in array {
     str .= (index == 1) ? value : delimiter . value
+  }
   return str
 }
 
@@ -138,8 +140,8 @@ WinGetActiveID() {
   }
 }
 
-TimedTip(text, timeout := 1000) {
-  ToolTip(text, A_ScreenWidth, A_ScreenHeight) && SetTimer(() => ToolTip(), -timeout)
+TimedTip(text, timeout := 1000, x := A_ScreenWidth, y := A_ScreenHeight) {
+  ToolTip(text, x, y) && SetTimer(() => ToolTip(), -timeout)
 }
 
 CallAsync(func, args*) {
@@ -154,18 +156,67 @@ Call(func, args*) {
   return func.Call(args*)
 }
 
-FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"]
+; FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"]
+FILTERED_WINDOW_CLASS := [
+  "Progman", ;Program Manager
+  "NotifyIconOverflowWindow", ;托盘
+  "TopLevelWindowForOverflowXamlIsland", ;托盘
+  "Microsoft.IME.UIManager.CandidateWindow.Host", ;输入法
+]
 
-IsUserWindow(id) {
-  return (FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0) && !WinGetAlwaysOnTop(id)
+USER_WINDOW_FILTER := " ahk_class ^(?!" JoinStrs(FILTERED_WINDOW_CLASS.Map(EscapeRegex), "|") ").*$"
+
+; Check whether windows should be filtered / always on top
+NotAOT(id) {
+  ; return (FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0)
+  return !WinGetAlwaysOnTop(id)
 }
 
-; Get the topmost user window that is not always on top
-WinGetTop() {
-  DetectHiddenWindows(false)
-  wndList := WinGetList(".+")
-  targetIndex := wndList.FindIndex(IsUserWindow)
-  wndId := targetIndex > 0 ? wndList[targetIndex] : false
+NotSystem(id) {
+  return FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0
+}
+
+; # 关于是否忽略 aot
+; 工作区忽略 aot
+; 绑定可以捕捉 aot
+; 进程+标题 可以捕捉 aot
+; 其余模式忽略 aot
+
+; Get the topmost user window (ignoring aot / hidden / system windows)
+WinGetUser(title := ".+", ignoreAot := true, ignoreHidden := true) {
+  wndList := WinGetUserList(title, ignoreAot, ignoreHidden)
+  return wndList.Length > 0 ? wndList[1] : false
+}
+
+WinGetUserList(title := ".+", ignoreAot := true, ignoreHidden := true) {
+  if (ignoreHidden)
+    DetectHiddenWindows(false)
+  wndList := WinGetList(title USER_WINDOW_FILTER)
   DetectHiddenWindows(true)
-  return wndId
+  if (ignoreAot)
+    wndList := wndList.Filter(NotAOT)
+  return wndList
+}
+
+ShallowClone(o) {
+  if (IsObject(o)) {
+    return o.Clone()
+  } else return o
+}
+
+EscapeRegex(str) {
+  static regexChars := ["\", ".", "*", "?", "+", "[", "{", "|", "(", ")", "^", "$"]
+  for c in regexChars
+    str := StrReplace(str, c, "\" c)
+  return str
+}
+
+
+LogWindows(list) {
+  for id in list
+    LogWindow(id)
+}
+
+LogWindow(id) {
+  OutputDebug(WinGetTitle(id) " | " WinGetClass(id) " | " WinGetProcessName(id) "`n")
 }

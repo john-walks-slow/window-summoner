@@ -18,8 +18,9 @@ _setupDynamicBinding(suffix, dynamicConfig) {
     try {
       oldId := id
       id := WinGetActiveID()
+      NotSystem(id) || (id := false)
     }
-    if (id && IsUserWindow(id)) {
+    if (id) {
       if (dynamicConfig["showTip"])
         TimedTip("绑定 " FormatHotkeyShorthand(mainShortcut) " 至 " WinGetTitle(id) || WinGetClass(id))
       if (oldId) {

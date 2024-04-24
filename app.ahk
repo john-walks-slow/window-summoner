@@ -125,7 +125,7 @@ class Configurator {
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用绑定', dynamicConfig, "enable", "section xs ys")
     ; this._addComponent(this.COMPONENT_CLASS.LINK, '?', , , "ys").OnEvent("Click", (*) {
     ;   MsgBox(
-    ;     "为当前活跃窗口绑定热键。`n"
+    ;     "为当前活跃窗口绑定老板键。`n"
     ;     "例：浏览网页时按 Win + Shift + 0，之后按 Win + 0 就能显示 / 隐藏该浏览器窗口。`n"
     ;     , "帮助")
     ; })
@@ -166,9 +166,9 @@ class Configurator {
       }
     )
     this._addComponent(this.COMPONENT_CLASS.INFO_BOX,
-      "工作区允许你将当前所有窗口的显示状态保存到一个热键上。`n`n"
+      "工作区允许你将当前所有窗口的显示状态保存到一个老板键上。`n`n"
       "除默认工作区外，每个后缀都指向一个不同的工作区。`n`n"
-      "按下【修饰键+任一后缀】切换到指定的工作区。在工作区内再次按下相应热键会回到默认工作区。`n`n"
+      "按下【修饰键+任一后缀】切换到指定的工作区。在工作区内再次按下相应老板键会回到默认工作区。`n`n"
       "例：老板来了按 Win+[，老板走了再按一下。",
       , , "r8.2 y+15")
   }
@@ -177,22 +177,26 @@ class Configurator {
     this.gui.AddText("section x+10 y+10 w0 h0", "")
     shortcutConfig := this.config["shortcuts"]
     c1 := 10
-    c2 := this.guiWidth * 0.3
-    c3 := this.guiWidth * 0.62
+    c2 := this.guiWidth * 0.34
+    c3 := this.guiWidth * 0.66
     c4 := this.guiWidth - 20
     w1 := c2 - c1 - 7
     w2 := c3 - c2 - 7
     w3 := c4 - c3 - 7
     w4 := 20
     ; Headers
-    this.gui.AddLink(S({ section: "", x: c1, y: "s", c: "787878" }), "程序 " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ section: "", x: c1, y: "s", c: "787878" }), "程序 "
+      '<a href="/">?</a>'
+    ).OnEvent(
       "Click", (*) {
         MsgBox(
-          "要启动的程序、文件或快捷方式`n"
+          "也可以是文件或快捷方式`n"
           , "帮助")
       }
     )
-    this.gui.AddLink(S({ x: c2, y: "s", c: "787878" }), "热键 " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ x: c2, y: "s", c: "787878" }), "老板键 "
+      '<a href="/">?</a>'
+    ).OnEvent(
       "Click", (*) {
         MsgBox(
           "用于唤起 / 隐藏该程序的热键`n"
@@ -200,15 +204,12 @@ class Configurator {
       }
     )
 
-    this.gui.AddLink(S({ x: c3, y: "s", c: "787878" }), "窗口标题正则 (高级) " '<a href="/">?</a>').OnEvent(
+    this.gui.AddLink(S({ x: c3, y: "s", c: "787878" }), "窗口匹配方式 "
+      '<a href="/">?</a>'
+    ).OnEvent(
       "Click", (*) {
         MsgBox(
-          "省略时，『呼来唤去』会自动捕获启动程序后出现的第一个新窗口。`n"
-          "不为空时，『呼来唤去』会捕获第一个窗口标题与该正则匹配的窗口。`n`n"
-          "在以下情况下本选项会有帮助：`n"
-          "- 希望捕获并非由『呼来唤去』启动的程序窗口`n"
-          "- 该程序有启动画面或需要忽略的弹窗`n"
-          "- 需要提高稳定性`n"
+          "如何捕捉属于该程序的窗口`n"
           , "帮助")
       }
     )
@@ -219,7 +220,7 @@ class Configurator {
     this.gui.AddButton(S({ x: c4, y: "s-7", }), "+").OnEvent(
       "Click", (gui, info) {
         this.tab.UseTab(1)
-        shortcutConfig.Push(UMap("hotkey", "", "run", "", "wnd_title", ""))
+        shortcutConfig.Push(makeShortcut())
         shortcutRow(shortcutConfig.Length, shortcutConfig[shortcutConfig.Length], false)
       }
     )
@@ -248,7 +249,7 @@ class Configurator {
       NOPREFIX := 0x80
       hotkeyButton := this.gui.AddButton(S({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
       hotkeyButton.onEvent("Click", (target, info) {
-        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置热键" : "配置 " appSelect.Text " 的热键")
+        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置老板键" : "配置 " appSelect.Text " 的老板键")
         this.subGuis.Push(customHotkeyWnd)
         customHotkeyWnd.MarginX := 10
         customHotkeyWnd.MarginY := 10
@@ -273,7 +274,7 @@ class Configurator {
         customHotkeyWnd.AddLink(S({ x: "+2" }), '<a href="/">?</a>').OnEvent(
           "Click", (*) {
             MsgBox(
-              "使用 AHK 格式配置更高级的热键。会覆盖上方的设置"
+              "使用 AHK 格式配置更高级的老板键。会覆盖上方的设置"
               , "帮助")
           }
         )
@@ -291,9 +292,89 @@ class Configurator {
         })
         customHotkeyWnd.Show()
       })
-      titleInput := this.gui.AddEdit(S({ y: "s+2", x: c3, w: w3, r: 1, "-wrap -VScroll": "" }), entry["wnd_title"])
-      titleInput.onEvent("Change", (gui, info) {
-        entry["wnd_title"] := gui.Value
+      entryCapture := entry["capture"]
+      CAPTURE_MODES := ["自动", "匹配进程", "匹配进程+标题"]
+      captureButton := this.gui.AddButton(S({ x: c3, y: "s", w: w3, r: 1, "-wrap -VScroll": "" }), CAPTURE_MODES[entryCapture["mode"]])
+      captureButton.onEvent("Click", (target, info) {
+        captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "捕捉方式")
+        this.subGuis.Push(captureWnd)
+        captureWnd.MarginX := 10
+        captureWnd.MarginY := 10
+        captureWnd.AddText("section", "模式：")
+        modeDropDown := captureWnd.AddDropDownList("ys-3 x+1", CAPTURE_MODES)
+        modeDropDown.Value := entryCapture["mode"]
+        modeDropDown.OnEvent("Change", (gui, info) {
+          _updateAdditionals()
+        })
+        captureWnd.AddLink(S({ x: "+10", y: "s" }), '<a href="/">?</a>').OnEvent(
+          "Click", (*) {
+            MsgBox(
+              "【自动】无需配置，自动捕捉出现在上方的有标题非置顶新窗口。`n`n"
+              "【匹配进程】稳定性更高，且支持匹配已经打开的窗口。`n`n"
+              "【匹配进程+标题】在匹配进程基础上匹配窗口标题（适合web应用等情况）。`n`n`n"
+              "进程与标题为正则表达式，用 .* 表示任意长度的通配"
+              , "帮助")
+          }
+        )
+        captureWnd.AddText("xs-3 y+10 w210 h1.2 Backgroundb5b5b5")
+        SPY_TEXT_ON := "🧲 吸取中 ..."
+        SPY_TEXT_OFF := "🧲 吸取窗口信息"
+        spyButton := captureWnd.AddButton("section ys+30 xs w100 Center", SPY_TEXT_OFF)
+        isSpying := false
+        spyButton.OnEvent("Click", (gui, info) {
+          if (isSpying) {
+            isSpying := false
+            spyButton.Text := SPY_TEXT_OFF
+            ToolTip()
+          }
+          else {
+            isSpying := true
+            spyButton.Text := SPY_TEXT_ON
+            currentExe := WinGetProcessPath("A")
+              ; OutputDebug("ahk_exe ^(?!\Q" currentExe "\E).*$")
+            SetTimer(() {
+              TimedTip("请点击目标窗口", 5000, 10, 80)
+              newWnd := WinWaitActive("ahk_exe ^(?!\Q" currentExe "\E).*$", , 20)
+              if (!isSpying) {
+                return
+              }
+              isSpying := false
+              spyButton.Text := SPY_TEXT_OFF
+              ToolTip()
+              if (!newWnd) {
+                MsgBox("窗口吸取失败！")
+              } else {
+                WinActivate(this.gui)
+                WinActivate(captureWnd)
+                titleEdit.Value := "^" EscapeRegex(WinGetTitle(newWnd)) "$"
+                processEdit.Value := "^" EscapeRegex(WinGetProcessPath(newWnd)) "$"
+              }
+            }, -1)
+          }
+        })
+        processLabel := captureWnd.AddText("xs section", "进程：")
+        processEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["process"])
+        titleLabel := captureWnd.AddText("xs section", "标题：")
+        titleEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["title"])
+        _updateAdditionals() {
+          spyButton.Enabled := modeDropDown.Value >= 2
+          processLabel.Enabled := modeDropDown.Value >= 2
+          processEdit.Enabled := modeDropDown.Value >= 2
+          titleLabel.Enabled := modeDropDown.Value >= 3
+          titleEdit.Enabled := modeDropDown.Value >= 3
+        }
+        _updateAdditionals()
+        captureWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
+          entryCapture["mode"] := modeDropDown.Value
+          entryCapture["process"] := processEdit.Value
+          entryCapture["title"] := titleEdit.Value
+          captureButton.Text := CAPTURE_MODES[entryCapture["mode"]]
+          captureWnd.Destroy()
+        })
+        captureWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
+          captureWnd.Destroy()
+        })
+        captureWnd.Show()
       })
       removeBtn := this.gui.AddButton(S({ x: c4, y: "s" }), "-")
       removeBtn.OnEvent(
@@ -382,17 +463,25 @@ class Configurator {
     )
     this.gui.AddText("xs y+20 c676767", "行为")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "启用过渡动画", miscConfig, "transitionAnim")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕获并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "捕捉并非『呼来唤去』启动的程序窗口", miscConfig, "reuseExistingWindow")
     this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
       "Click", (*) {
         MsgBox(
-          "勾选后，会根据『窗口标题正则』在现有窗口中尝试捕获目标窗口。`n"
-          "若取消勾选，将仅仅捕获由『呼来唤去』启动的程序窗口。`n"
+          "勾选后，会根据『窗口标题正则』在现有窗口中尝试捕捉目标窗口。`n"
+          "若取消勾选，将仅仅捕捉由『呼来唤去』启动的程序窗口。`n"
           , "帮助")
       }
     )
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "唤起新窗口时隐藏当前唤起的窗口", miscConfig, "singleActiveWindow")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "最小化而不是隐藏窗口", miscConfig, "minimizeInstead")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "使用旧版捕捉方式", miscConfig, "alternativeCapture")
+    this.gui.AddLink(S({ x: "+0", y: "s" }), '<a href="/">?</a>').OnEvent(
+      "Click", (*) {
+        MsgBox(
+          "启用时仅匹配最上方的窗口，关闭时遍历所有窗口。`n"
+          , "帮助")
+      }
+    )
   }
   _refreshGui(opt?) {
     oldGui := this.gui

@@ -36,7 +36,7 @@ setupWorkspace(workspaceConfig) {
     current := workspaces[currentWorkspace]
     target := workspaces[targetWorkspace]
     DetectHiddenWindows(false)
-    current.list := WinGetList(, , "\A\Z").Filter((wnd) => IsUserWindow(wnd))
+    current.list := WinGetUserList()
     DetectHiddenWindows(true)
     current.active := WinGetActiveID()
     for (wnd in current.list) {
@@ -45,6 +45,7 @@ setupWorkspace(workspaceConfig) {
       addWndHandler(wnd)
     }
     loop (target.list.Length) {
+      ; wnd := target.list[A_Index]
       wnd := target.list[target.list.Length - A_Index + 1]
       CallAsync(WinShow, wnd)
     }

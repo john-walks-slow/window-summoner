@@ -23,6 +23,7 @@ toggleWnd(id, entry := unset) {
   if (!id || !WinExist(id)) {
     id := _capture()
   }
+
   oldActivatedWnd := activatedWnd
   if (!id) {
     ; If still not found, run the program
@@ -51,38 +52,82 @@ toggleWnd(id, entry := unset) {
   }
   pending := false
   return id
-
   _capture() {
     ; Try to match existing window
-    if (entry && config["misc"]["reuseExistingWindow"] && entry["wnd_title"] && WinExist(entry["wnd_title"])) {
-      return WinGetID(entry["wnd_title"])
+    target := false
+    if (entry && config["misc"]["reuseExistingWindow"]) {
+      switch (entry["capture"]["mode"]) {
+        case 2:
+          try {
+            target := WinGetUser(".+" " ahk_exe " entry["capture"]["process"])
+          } catch Error as e {
+            target := false
+          }
+        case 3:
+          try {
+            target := WinGetUser(entry["capture"]["title"] " ahk_exe " entry["capture"]["process"], false, false)
+          } catch Error as e {
+            target := false
+          }
+        default:
+          target := false
+      }
     }
+    return target
   }
   _run() {
     if (entry && entry["run"] != "") {
-      currentWnd := WinGetTop()
       currentTime := A_TickCount
+      TIMEOUT := entry["capture"]["mode"] == 1 ? 5000 : 20000
+      INTERVAL := 50
       Run(entry["run"], , , &pid)
-      TIMEOUT := entry["wnd_title"] ? 30000 : 5000
-      INTERVAL := 100
-      ; If not found, wait for a new window
-      while (A_TickCount - currentTime < TIMEOUT) {
-        newWnd := WinGetTop()
-        ; We only care about new windows
-        if (newWnd && newWnd != currentWnd) {
-          ; If wnd_title is provided, match it
-          if ((!entry["wnd_title"] && IsUserWindow(newWnd)) ||
-            WinGetTitle(newWnd) ~= entry["wnd_title"]) {
+      winTitle := ".+"
+      ignoreAotHidden := true
+      switch (entry["capture"]["mode"]) {
+        case 2:
+          winTitle := ".+" " ahk_exe " entry["capture"]["process"]
+        case 3:
+          winTitle := entry["capture"]["title"] " ahk_exe " entry["capture"]["process"]
+          ignoreAotHidden := false
+      }
+      if (config["misc"]["alternativeCapture"]) {
+        ; 旧方案：捕捉出现在上方的第一个有标题、非置顶新窗口
+        currentWnd := WinGetUser(winTitle, ignoreAotHidden, ignoreAotHidden)
+        while (A_TickCount - currentTime < TIMEOUT) {
+          newWnd := WinGetUser(winTitle, ignoreAotHidden, ignoreAotHidden)
+          if (newWnd && newWnd != currentWnd) {
+            CallAsync(WinActivate, newWnd)
+            activatedWnd := newWnd
+            return newWnd
+          }
+          Sleep(INTERVAL)
+        }
+      } else {
+        ;; 新方案：获取窗口列表，对比差异。
+        ;; pro：如果程序没有启动到最上方，也能找到。
+        ;; pro：启动过程中焦点改变，也能找到。
+        currentWndList := WinGetUserList(winTitle, ignoreAotHidden, ignoreAotHidden)
+        while (A_TickCount - currentTime < TIMEOUT) {
+          newWndList := WinGetUserList(winTitle, ignoreAotHidden, ignoreAotHidden)
+          ; if (newWndList.Length == currentWndList.Length) {
+          ;   continue
+          ; }
+          ; if (newWndList.Length < currentWndList.Length) {
+          ;   currentWndList := newWndList
+          ;   continue
+          ; }
+          for (i, newWnd in newWndList) {
+            if (currentWndList.IndexOf(newWnd) == 0) {
               CallAsync(WinActivate, newWnd)
               activatedWnd := newWnd
               return newWnd
+            }
           }
+          Sleep(INTERVAL)
         }
-        Sleep(INTERVAL)
       }
     }
   }
-
   _hide(id, restoreLastFocus := false, clearActivatedWnd := false) {
     ; OutputDebug(WinGetTitle(id) "`n")
     try {
@@ -99,7 +144,6 @@ toggleWnd(id, entry := unset) {
     }
     addWndHandler(id)
   }
-
   _show(id) {
     try {
       CallAsync(WinShow, id)

@@ -10,11 +10,13 @@ activatedWnd := false
 ; Toggle between hidden and shown
 toggleWnd(id, entry := unset) {
   static pending := false
+  static running := false
   ; Prevent concurrent actions only if singleActiveWindow is on
   ; * Every hotkey is running on a separate thread, so we need to use a static variable to keep track of the state
   if (config["misc"]["singleActiveWindow"] && pending) {
     return id
   }
+
   pending := true
   global wndHandlers
   global activatedWnd
@@ -28,6 +30,7 @@ toggleWnd(id, entry := unset) {
   if (!id) {
     ; If still not found, run the program
     id := _run()
+    running := false
     _hideActive(oldActivatedWnd)
   } else {
     ; Otherwise, toggle it
@@ -65,7 +68,7 @@ toggleWnd(id, entry := unset) {
           }
         case 3:
           try {
-            target := WinGetUser(entry["capture"]["title"] " ahk_exe " entry["capture"]["process"], false, false)
+            target := WinGetUser(entry["capture"]["title"] " ahk_exe " entry["capture"]["process"], false, false, false)
           } catch Error as e {
             target := false
           }
@@ -76,25 +79,28 @@ toggleWnd(id, entry := unset) {
     return target
   }
   _run() {
+    if (running)
+      return id
+    running := true
     if (entry && entry["run"] != "") {
       currentTime := A_TickCount
       TIMEOUT := entry["capture"]["mode"] == 1 ? 5000 : 20000
       INTERVAL := 50
       Run(entry["run"], , , &pid)
       winTitle := ".+"
-      ignoreAotHidden := true
+      ignoreMiscWindows := true
       switch (entry["capture"]["mode"]) {
         case 2:
           winTitle := ".+" " ahk_exe " entry["capture"]["process"]
         case 3:
           winTitle := entry["capture"]["title"] " ahk_exe " entry["capture"]["process"]
-          ignoreAotHidden := false
+          ignoreMiscWindows := false
       }
       if (config["misc"]["alternativeCapture"]) {
         ; 旧方案：捕捉出现在上方的第一个有标题、非置顶新窗口
-        currentWnd := WinGetUser(winTitle, ignoreAotHidden, ignoreAotHidden)
+        currentWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
         while (A_TickCount - currentTime < TIMEOUT) {
-          newWnd := WinGetUser(winTitle, ignoreAotHidden, ignoreAotHidden)
+          newWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
           if (newWnd && newWnd != currentWnd) {
             CallAsync(WinActivate, newWnd)
             activatedWnd := newWnd
@@ -106,9 +112,9 @@ toggleWnd(id, entry := unset) {
         ;; 新方案：获取窗口列表，对比差异。
         ;; pro：如果程序没有启动到最上方，也能找到。
         ;; pro：启动过程中焦点改变，也能找到。
-        currentWndList := WinGetUserList(winTitle, ignoreAotHidden, ignoreAotHidden)
+        currentWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
         while (A_TickCount - currentTime < TIMEOUT) {
-          newWndList := WinGetUserList(winTitle, ignoreAotHidden, ignoreAotHidden)
+          newWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
           ; if (newWndList.Length == currentWndList.Length) {
           ;   continue
           ; }

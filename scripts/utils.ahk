@@ -133,11 +133,13 @@ EscapeAmpersand(str) {
 }
 
 WinGetActiveID() {
+  DetectHiddenWindows(false)
   try {
     return WinGetID("A")
   } catch Error as e {
     return false
   }
+  DetectHiddenWindows(true)
 }
 
 TimedTip(text, timeout := 1000, x := A_ScreenWidth, y := A_ScreenHeight) {
@@ -145,30 +147,43 @@ TimedTip(text, timeout := 1000, x := A_ScreenWidth, y := A_ScreenHeight) {
 }
 
 CallAsync(func, args*) {
-  return NewThread(
-    "try {`n"
-    func.Name "(" JoinStrs(args, ",") ")`n"
-    "}"
-  )
+  return SetTimer(() {
+    try {
+      return func.Call(args*)
+    }
+  }, -1)
+  ; return NewThread(
+  ;   "try {`n"
+  ;   func.Name "(" JoinStrs(args, ",") ")`n"
+  ;   "}"
+  ; )
 }
 
-Call(func, args*) {
-  return func.Call(args*)
-}
 
 ; FILTERED_WINDOW_CLASS := ["DV2ControlHost", "TopLevelWindowForOverflowXamlIsland", "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "Progman", "MSCTFIME UI"]
 FILTERED_WINDOW_CLASS := [
   "Progman", ;Program Manager
-  "NotifyIconOverflowWindow", ;托盘
-  "TopLevelWindowForOverflowXamlIsland", ;托盘
+  "DV2ControlHost", ;开始菜单
+  "NotifyIconOverflowWindow", ;旧版托盘
+  "TopLevelWindowForOverflowXamlIsland", ;新托盘
   "Microsoft.IME.UIManager.CandidateWindow.Host", ;输入法
+  "IME", ;输入法
+  "MSCTFIME UI",
+  ; "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "MSCTFIME UI"
+  ; "Xaml_WindowedPopupCIass"
 ]
 
-USER_WINDOW_FILTER := " ahk_class ^(?!" JoinStrs(FILTERED_WINDOW_CLASS.Map(EscapeRegex), "|") ").*$"
+FILTERED_WINDOW_TITLE := [
+  "DesktopWindowXamlSource"
+]
+FILTERED_WINDOW_EXE := []
 
-; Check whether windows should be filtered / always on top
+EXE_FILTER := ""
+CLASS_FILTER := "^(?!" JoinStrs(FILTERED_WINDOW_CLASS.Map(EscapeRegex), "|") ").*$"
+TITLE_FILTER := "^(?!" JoinStrs(FILTERED_WINDOW_TITLE.Map(EscapeRegex), "|") ").+$"
+
+
 NotAOT(id) {
-  ; return (FILTERED_WINDOW_CLASS.IndexOf(WinGetClass(id)) == 0)
   return !WinGetAlwaysOnTop(id)
 }
 
@@ -182,20 +197,42 @@ NotSystem(id) {
 ; 进程+标题 可以捕捉 aot
 ; 其余模式忽略 aot
 
-; Get the topmost user window (ignoring aot / hidden / system windows)
-WinGetUser(title := ".+", ignoreAot := true, ignoreHidden := true, ignoreSystem := true) {
-  wndList := WinGetUserList(title, ignoreAot, ignoreHidden, ignoreSystem)
-  return wndList.Length > 0 ? wndList[1] : false
-}
 
-WinGetUserList(title := ".+", ignoreAot := true, ignoreHidden := true, ignoreSystem := true) {
+WinGetUserList(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
+  ignoreHidden := IsSet(ignoreHidden) ? ignoreHidden : !title
+  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !title
+  exe := exe || EXE_FILTER
+  class := class || CLASS_FILTER
+  title := title || TITLE_FILTER
+
   if (ignoreHidden)
     DetectHiddenWindows(false)
-  wndList := WinGetList(title (ignoreSystem ? USER_WINDOW_FILTER : ""))
-  DetectHiddenWindows(true)
+  wndList := WinGetList(title " ahk_exe " exe " ahk_class " class)
+  if (ignoreHidden)
+    DetectHiddenWindows(true)
   if (ignoreAot)
     wndList := wndList.Filter(NotAOT)
   return wndList
+}
+; Get the topmost user window (ignoring aot / hidden / system windows)
+WinGetUser(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
+  ignoreHidden := IsSet(ignoreHidden) ? ignoreHidden : !title
+  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !class
+  exe := exe || EXE_FILTER
+  class := class || CLASS_FILTER
+  title := title || TITLE_FILTER
+
+  if (ignoreAot) {
+    wndList := WinGetUserList(exe, class, title, ignoreHidden, ignoreAot)
+    return wndList.Length > 0 ? wndList[1] : false
+  } else {
+    if (ignoreHidden)
+      DetectHiddenWindows(false)
+    wnd := WinGetID(title " ahk_exe " exe " ahk_class " class)
+    if (ignoreHidden)
+      DetectHiddenWindows(true)
+    return wnd
+  }
 }
 
 ShallowClone(o) {
@@ -219,4 +256,19 @@ LogWindows(list) {
 
 LogWindow(id) {
   OutputDebug(WinGetTitle(id) " | " WinGetClass(id) " | " WinGetProcessName(id) "`n")
+}
+
+LimitStr(str, len := 40, suffix := "...") {
+  return StrLen(str) > len ? (SubStr(str, 1, len) suffix) : str
+}
+
+WinSetMinMax(title, minMax) {
+  switch minMax {
+    case -1:
+      WinMinimize(title)
+    case 0:
+      WinRestore(title)
+    case 1:
+      WinMaximize(title)
+  }
 }

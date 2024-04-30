@@ -199,8 +199,10 @@ NotSystem(id) {
 
 
 WinGetUserList(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
+  ; ignoreHidden when title isn't provided
   ignoreHidden := IsSet(ignoreHidden) ? ignoreHidden : !title
-  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !class
+  ; ignoreAot when neither title nor class is provided
+  ignoreAot := IsSet(ignoreAot) ? ignoreAot : (!title && !class)
   exe := exe || EXE_FILTER
   class := class || CLASS_FILTER
   title := title || TITLE_FILTER
@@ -216,8 +218,10 @@ WinGetUserList(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
 }
 ; Get the topmost user window (ignoring aot / hidden / system windows)
 WinGetUser(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
+  ; ignoreHidden when title isn't provided
   ignoreHidden := IsSet(ignoreHidden) ? ignoreHidden : !title
-  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !class
+  ; ignoreAot when neither title nor class is provided
+  ignoreAot := IsSet(ignoreAot) ? ignoreAot : (!title && !class)
   exe := exe || EXE_FILTER
   class := class || CLASS_FILTER
   title := title || TITLE_FILTER

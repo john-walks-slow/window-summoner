@@ -17,6 +17,7 @@ CONFIG_DEFAULT := UMap(
   "workspace", UMap(
     "enable", true,
     "showTip", true,
+    "fullRestore", true,
     "mod", ["#"],
     "suffixs", ["[", "]"],
   ),
@@ -45,6 +46,7 @@ makeShortcut() {
     "capture", UMap(
       "mode", 1, ;1:auto 2:process 3:process+title
       "process", "",
+      "class", "",
       "title", "",
     )
   )
@@ -58,7 +60,6 @@ checkConfig(config) {
   for (s in config["shortcuts"]) {
     if (s.Get("wnd_title", "") !== "") {
       s["capture"]["mode"] := 3
-      s["capture"]["process"] := ".*"
       s["capture"]["title"] := s["wnd_title"]
     }
     s.Delete("wnd_title")

@@ -200,7 +200,7 @@ NotSystem(id) {
 
 WinGetUserList(exe := "", class := "", title := "", ignoreHidden?, ignoreAot?) {
   ignoreHidden := IsSet(ignoreHidden) ? ignoreHidden : !title
-  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !title
+  ignoreAot := IsSet(ignoreAot) ? ignoreAot : !class
   exe := exe || EXE_FILTER
   class := class || CLASS_FILTER
   title := title || TITLE_FILTER

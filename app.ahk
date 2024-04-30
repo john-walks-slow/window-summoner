@@ -1,5 +1,6 @@
 ﻿#SingleInstance Force
 #Warn All, OutputDebug
+#MaxThreads 32
 
 DetectHiddenWindows(true)
 SetTitleMatchMode("RegEx")
@@ -12,6 +13,8 @@ VERSION_NUMBER := FileRead(A_ScriptDir "\data\version.txt", "utf-8")
 #Include scripts\main.ahk
 
 config := readConfig()
+hiddenWindowMap := Map()
+hiddenWindowMenu := Menu()
 
 class Configurator {
   __New() {
@@ -82,7 +85,7 @@ class Configurator {
           writeConfig(this.config)
           this._startMainScript()
         }
-        updateTrayVisibility()
+        updateTray()
         MsgBox("已应用新配置")
       }
     )
@@ -155,6 +158,7 @@ class Configurator {
     workspaceConfig := this.config["workspace"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用工作区', workspaceConfig, "enable", "section xs ys")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "切换工作区时显示提示框", workspaceConfig, "showTip")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "还原窗口位置与大小（较慢）", workspaceConfig, "fullRestore")
     this.gui.AddText("section xs y+13", "修饰键   ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, workspaceConfig, "mod")
     this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", workspaceConfig, "suffixs")
@@ -293,7 +297,7 @@ class Configurator {
         customHotkeyWnd.Show()
       })
       entryCapture := entry["capture"]
-      CAPTURE_MODES := ["自动", "匹配进程", "匹配进程+标题"]
+      CAPTURE_MODES := ["自动", "进程+类名", "进程+类名+标题"]
       captureButton := this.gui.AddButton(S({ x: c3, y: "s", w: w3, r: 1, "-wrap -VScroll": "" }), CAPTURE_MODES[entryCapture["mode"]])
       captureButton.onEvent("Click", (target, info) {
         captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "匹配方式")
@@ -310,10 +314,10 @@ class Configurator {
           "Click", (*) {
             MsgBox(
               "【自动】无需额外配置，捕捉新出现的有标题非置顶窗口。`n`n"
-              "【匹配进程】更稳定，支持捕捉已存在的窗口。进程可以用吸取工具填写。`n`n"
-              "【匹配进程+标题】在匹配进程基础上匹配窗口标题，适合网页应用等情况。`n"
-              "只有【匹配进程+标题】模式不会过滤 置顶/隐藏/系统 窗口。`n`n`n"
-              "*进程与标题为正则表达式，用 .* 表示任意长度的通配。"
+              "【进程+类名】更稳定且支持捕捉已存在的窗口。进程与类名可以用吸取工具自动填写。`n`n"
+              "【进程+类名+标题】在前者基础上匹配窗口标题，适合网页应用等情况。`n`n`n"
+              ; "只有【匹配进程,类名,标题】模式不会过滤 置顶/隐藏/系统 窗口。`n`n`n"
+              "进程、类名、标题均为正则表达式，用 .* 表示任意长度的通配。"
               , "帮助")
           }
         )
@@ -349,18 +353,23 @@ class Configurator {
                 WinActivate(captureWnd)
                 titleEdit.Value := "^" EscapeRegex(WinGetTitle(newWnd)) "$"
                 processEdit.Value := "^" EscapeRegex(WinGetProcessPath(newWnd)) "$"
+                classEdit.Value := "^" EscapeRegex(WinGetClass(newWnd)) "$"
               }
             }, -1)
           }
         })
         processLabel := captureWnd.AddText("xs section", "进程：")
         processEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["process"])
+        classLabel := captureWnd.AddText("xs section", "类名：")
+        classEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["class"])
         titleLabel := captureWnd.AddText("xs section", "标题：")
         titleEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["title"])
         _updateAdditionals() {
           spyButton.Enabled := modeDropDown.Value >= 2
           processLabel.Enabled := modeDropDown.Value >= 2
           processEdit.Enabled := modeDropDown.Value >= 2
+          classLabel.Enabled := modeDropDown.Value >= 2
+          classEdit.Enabled := modeDropDown.Value >= 2
           titleLabel.Enabled := modeDropDown.Value >= 3
           titleEdit.Enabled := modeDropDown.Value >= 3
         }
@@ -368,6 +377,7 @@ class Configurator {
         captureWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
           entryCapture["mode"] := modeDropDown.Value
           entryCapture["process"] := processEdit.Value
+          entryCapture["class"] := classEdit.Value
           entryCapture["title"] := titleEdit.Value
           captureButton.Text := CAPTURE_MODES[entryCapture["mode"]]
           captureWnd.Destroy()
@@ -517,7 +527,7 @@ class Configurator {
   }
 }
 
-updateTrayVisibility()
+updateTray()
 setupTray()
 instance := Configurator()
 if (HasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
@@ -526,11 +536,50 @@ if (HasVal(A_Args, "--no-gui") && config["misc"]["minimizeToTray"]) {
 }
 instance._startMainScript()
 
+addHiddenSubmenu(id) {
+  global hiddenWindowMap
+  if (!hiddenWindowMap.Has(id)) {
+    name := LimitStr(WinGetTitle(id))
+    hiddenWindowMap[id] := name
+    hiddenWindowMenu.Add(name, (name, pos, menu) {
+      popWndHandler(id)
+    })
+    updateHiddenSubmenu()
+  }
+}
+
+removeHiddenSubmenu(id) {
+  try {
+    hiddenWindowMenu.Delete(hiddenWindowMap[id])
+    hiddenWindowMap.Delete(id)
+    updateHiddenSubmenu()
+  }
+}
+
+updateHiddenSubmenu() {
+  try {
+    global hiddenWindowMap
+    static currentName := "还原窗口"
+    n := hiddenWindowMap.Count
+    newName := "还原窗口（" n "）"
+    A_TrayMenu.Rename(currentName, newName)
+    currentName := newName
+
+    if (n == 0) {
+      A_TrayMenu.Disable(currentName)
+    } else {
+      A_TrayMenu.Enable(currentName)
+    }
+  }
+}
 
 setupTray() {
   global ICON_PATH
+  global hiddenWindowMenu
+
   TraySetIcon(ICON_PATH)
   A_TrayMenu.Delete()
+
   openGui(*) {
     if (instance.HasProp("gui")) {
       instance._refreshGui()
@@ -540,12 +589,17 @@ setupTray() {
   }
 
   A_TrayMenu.Add("配置", openGui)
-  A_TrayMenu.Add("还原窗口", (*) {
+  A_TrayMenu.Add("还原窗口", hiddenWindowMenu)
+  hiddenWindowMenu.Add("全部还原", (*) {
     clearWndHandlers()
   })
+  updateHiddenSubmenu()
   A_TrayMenu.Add("退出", (*) {
+    ; Have to delete the menu before exiting, other wise it will cause a crash
+    A_TrayMenu.Delete()
     ExitApp()
   })
+
   OnMessage(0x404, (wParam, lParam, *) {
     ; user left-clicked tray icon
     if (lParam = 0x202) {
@@ -567,7 +621,7 @@ setupTray() {
   })
 }
 
-updateTrayVisibility() {
+updateTray() {
   if (config["misc"]["hideTray"] || !config["misc"]["minimizeToTray"]) {
     A_IconHidden := true
   } else {

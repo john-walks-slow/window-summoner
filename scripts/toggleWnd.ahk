@@ -21,14 +21,29 @@ toggleWnd(id, entry := unset) {
   global wndHandlers
   global activatedWnd
   global config
-  ; Try to capture window
+
+
+  targetExe := false
+  targetClass := false
+  targetTitle := false
+
+
   if (!id || !WinExist(id)) {
+    ; Parse target info
+    if (entry["capture"]["mode"] >= 2) {
+      targetExe := entry["capture"]["process"] || false
+      targetClass := entry["capture"]["class"] || false
+    }
+    if (entry["capture"]["mode"] == 3) {
+      targetTitle := entry["capture"]["title"] || false
+    }
+    ; Try to capture window
     id := _capture()
   }
 
   oldActivatedWnd := activatedWnd
+  ; If still not found, run the program
   if (!id) {
-    ; If still not found, run the program
     id := _run()
     running := false
     _hideActive(oldActivatedWnd)
@@ -58,22 +73,11 @@ toggleWnd(id, entry := unset) {
   _capture() {
     ; Try to match existing window
     target := false
-    if (entry && config["misc"]["reuseExistingWindow"]) {
-      switch (entry["capture"]["mode"]) {
-        case 2:
-          try {
-            target := WinGetUser(".+" " ahk_exe " entry["capture"]["process"])
-          } catch Error as e {
-            target := false
-          }
-        case 3:
-          try {
-            target := WinGetUser(entry["capture"]["title"] " ahk_exe " entry["capture"]["process"], false, false, false)
-          } catch Error as e {
-            target := false
-          }
-        default:
-          target := false
+    if (entry && config["misc"]["reuseExistingWindow"] && entry["capture"]["mode"] > 1) {
+      try {
+        target := WinGetUser(targetExe, targetClass, targetTitle)
+      } catch Error as e {
+        target := false
       }
     }
     return target
@@ -86,21 +90,13 @@ toggleWnd(id, entry := unset) {
       currentTime := A_TickCount
       TIMEOUT := entry["capture"]["mode"] == 1 ? 6000 : 10000
       INTERVAL := 50
-      winTitle := ".+"
-      ignoreMiscWindows := true
-      switch (entry["capture"]["mode"]) {
-        case 2:
-          winTitle := ".+" " ahk_exe " entry["capture"]["process"]
-        case 3:
-          winTitle := entry["capture"]["title"] " ahk_exe " entry["capture"]["process"]
-          ignoreMiscWindows := false
-      }
+
       if (config["misc"]["alternativeCapture"]) {
         ; 旧方案：捕捉出现在上方的第一个有标题、非置顶新窗口
-        currentWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+        currentWnd := WinGetUser(targetExe, targetClass, targetTitle)
         Run(entry["run"], , , &pid)
         while (A_TickCount - currentTime < TIMEOUT) {
-          newWnd := WinGetUser(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+          newWnd := WinGetUser(targetExe, targetClass, targetTitle)
           if (newWnd && newWnd != currentWnd) {
             CallAsync(WinActivate, newWnd)
             activatedWnd := newWnd
@@ -112,10 +108,10 @@ toggleWnd(id, entry := unset) {
         ;; 新方案：获取窗口列表，对比差异。
         ;; pro：如果程序没有启动到最上方，也能找到。
         ;; pro：启动过程中焦点改变，也能找到。
-        currentWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+        currentWndList := WinGetUserList(targetExe, targetClass, targetTitle)
         Run(entry["run"], , , &pid)
         while (A_TickCount - currentTime < TIMEOUT) {
-          newWndList := WinGetUserList(winTitle, ignoreMiscWindows, ignoreMiscWindows, ignoreMiscWindows)
+          newWndList := WinGetUserList(targetExe, targetClass, targetTitle)
           ; if (newWndList.Length == currentWndList.Length) {
           ;   continue
           ; }
@@ -145,10 +141,12 @@ toggleWnd(id, entry := unset) {
         } else
           Send("!{Esc}")
       }
-      CallAsync(WinHide, id)
+      ; CallAsync(WinHide, id)
+      WinHide(id)
       if (clearActivatedWnd)
         activatedWnd := false
     }
+    addHiddenSubmenu(id)
     addWndHandler(id)
   }
   _show(id) {
@@ -157,6 +155,7 @@ toggleWnd(id, entry := unset) {
       Sleep(50)
       CallAsync(WinActivate, id)
       activatedWnd := id
+      removeHiddenSubmenu(id)
     }
   }
   _minimize(id, clearActivatedWnd := false) {
@@ -186,7 +185,7 @@ toggleWnd(id, entry := unset) {
 
 addWndHandler(id) {
   global wndHandlers
-  ; Handle exit, try to reuse handler
+  ; Handle exit
   if (!wndHandlers.Has(String(id))) {
     ; id is remembered in closure
     exitHandler := (e, c) {
@@ -196,6 +195,7 @@ addWndHandler(id) {
           WinMinimize(id)
           WinShow(id)
         }
+        removeHiddenSubmenu(id)
       }
     }
     ; Keep a record of bound exitHandlers
@@ -207,6 +207,7 @@ addWndHandler(id) {
 clearWndHandlers() {
   global wndHandlers
   global activatedWnd
+
 
   activatedWnd := false
   for id, handler in wndHandlers {
@@ -222,6 +223,7 @@ clearWndHandlers() {
 popWndHandler(id) {
   if (wndHandlers.Has(String(id))) {
     handler := wndHandlers.Get(String(id))
+    wndHandlers.Delete(String(id))
     try {
       OnExit(handler, 0)
       OnError(handler, 0)

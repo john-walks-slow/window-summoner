@@ -18,7 +18,7 @@ _setupDynamicBinding(suffix, dynamicConfig) {
     try {
       oldId := id
       id := WinGetActiveID()
-      NotSystem(id) || (id := false)
+        ; NotSystem(id) || (id := false)
     }
     if (id) {
       if (dynamicConfig["showTip"])

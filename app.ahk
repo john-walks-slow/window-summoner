@@ -39,7 +39,7 @@ class Configurator {
       if (!this.config["misc"]["minimizeToTray"] || !this.isMainRunning) {
         ExitApp()
       }
-    })
+      })
   }
   _skeleton() {
     this.guiWidth := 450
@@ -102,7 +102,7 @@ class Configurator {
     aboutMenu := Menu()
     aboutMenu.Add("版本：" VERSION_NUMBER, (name, pos, menu) {
       Run("https://github.com/john-walks-slow/window-summoner")
-    },)
+      },)
 
     this.gui.MenuBar := MenuBar()
     this.STATE_RUNNING := "⏹ 停止"
@@ -158,7 +158,7 @@ class Configurator {
     workspaceConfig := this.config["workspace"]
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, '启用工作区', workspaceConfig, "enable", "section xs ys")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "切换工作区时显示提示框", workspaceConfig, "showTip")
-    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "还原窗口位置与大小（较慢）", workspaceConfig, "fullRestore")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "还原窗口位置与大小", workspaceConfig, "fullRestore")
     this.gui.AddText("section xs y+13", "修饰键   ")
     this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, false, workspaceConfig, "mod")
     this._addComponent(this.COMPONENT_CLASS.SUFFIX_INPUT, "后缀键", workspaceConfig, "suffixs")
@@ -236,163 +236,163 @@ class Configurator {
     }
     shortcutRow(index, entry, isFirst) {
       appSelectTxt() {
-        RegExMatch(entry["run"], "([^\\]+?)(\.[^.]*)?$", &match)
-        ; this.gui.AddText(s({ section: "", x: "s", y: isFirst ? "s" : "+10" }), match[1])
-        return match ? match[1] : false
+      RegExMatch(entry["run"], "([^\\]+?)(\.[^.]*)?$", &match)
+      ; this.gui.AddText(s({ section: "", x: "s", y: isFirst ? "s" : "+10" }), match[1])
+      return match ? match[1] : false
+    }
+    appSelect := this.gui.AddButton(S({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt() || "选择")
+    appSelect.OnEvent(
+      "Click", (gui, info) {
+        fileChoice := FileSelect(32)
+        if (fileChoice) {
+          entry["run"] := fileChoice
+          gui.Text := appSelectTxt() || "选择"
+        }
       }
-      appSelect := this.gui.AddButton(S({ section: "", x: "s", y: isFirst ? "s" : "+-1", w: w1, r: 1, "-wrap -VScroll": "" }), appSelectTxt() || "选择")
-      appSelect.OnEvent(
-        "Click", (gui, info) {
-          fileChoice := FileSelect(32)
-          if (fileChoice) {
-            entry["run"] := fileChoice
-            gui.Text := appSelectTxt() || "选择"
-          }
+    )
+    NOPREFIX := 0x80
+    hotkeyButton := this.gui.AddButton(S({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
+    hotkeyButton.onEvent("Click", (target, info) {
+      customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置老板键" : "配置 " appSelect.Text " 的老板键")
+      this.subGuis.Push(customHotkeyWnd)
+      customHotkeyWnd.MarginX := 10
+      customHotkeyWnd.MarginY := 10
+      parseResult := ParseHotkeyShorthand(entry["hotkey"])
+      hotkeyObj := parseResult || { mods: [], key: "" }
+      customHotkeyWnd.AddText("section y+10 w0 h0", "")
+      this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
+      oldKey := StrUpper(hotkeyObj["key"])
+      customHotkeyWnd.AddEdit(S({ x: "+2", y: "s-3", w: 20 }), oldKey).OnEvent("Change", (target, info) {
+        splited := StrSplit(target.Value)
+        if (splited.Length > 0) {
+          key := StrLower(splited.Get(splited.FindIndex(v => v != oldKey) || 1))
+        } else {
+          key := ""
+        }
+        hotkeyObj["key"] := key
+        target.Value := StrUpper(key)
+        oldKey := target.Value
+        })
+      customHotkeyWnd.AddText(S({ x: "s", y: "+20", section: "" }), "AHK (高级)")
+      advancedEdit := customHotkeyWnd.AddEdit(S({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
+      customHotkeyWnd.AddLink(S({ x: "+2" }), '<a href="/">?</a>').OnEvent(
+        "Click", (*) {
+          MsgBox(
+            "使用 AHK 格式配置更高级的老板键。会覆盖上方的设置"
+            , "帮助")
         }
       )
-      NOPREFIX := 0x80
-      hotkeyButton := this.gui.AddButton(S({ x: c2, y: "s", w: w2, r: 1, "-wrap -VScroll": "" }), EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"])) || "配置")
-      hotkeyButton.onEvent("Click", (target, info) {
-        customHotkeyWnd := Gui("-MinimizeBox -MaximizeBox", appSelect.Text == "选择" ? "配置老板键" : "配置 " appSelect.Text " 的老板键")
-        this.subGuis.Push(customHotkeyWnd)
-        customHotkeyWnd.MarginX := 10
-        customHotkeyWnd.MarginY := 10
-        parseResult := ParseHotkeyShorthand(entry["hotkey"])
-        hotkeyObj := parseResult || { mods: [], key: "" }
-        customHotkeyWnd.AddText("section y+10 w0 h0", "")
-        this._addComponent(this.COMPONENT_CLASS.MOD_SELECT, "", hotkeyObj, "mods", false, customHotkeyWnd)
-        oldKey := StrUpper(hotkeyObj["key"])
-        customHotkeyWnd.AddEdit(S({ x: "+2", y: "s-3", w: 20 }), oldKey).OnEvent("Change", (target, info) {
-          splited := StrSplit(target.Value)
-          if (splited.Length > 0) {
-            key := StrLower(splited.Get(splited.FindIndex(v => v != oldKey) || 1))
-          } else {
-            key := ""
-          }
-          hotkeyObj["key"] := key
-          target.Value := StrUpper(key)
-          oldKey := target.Value
+      customHotkeyWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
+        if (advancedEdit.Text) {
+          entry["hotkey"] := advancedEdit.Text
+        } else {
+          entry["hotkey"] := ToShorthand(hotkeyObj)
+        }
+        hotkeyButton.Text := EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"]))
+        customHotkeyWnd.Destroy()
         })
-        customHotkeyWnd.AddText(S({ x: "s", y: "+20", section: "" }), "AHK (高级)")
-        advancedEdit := customHotkeyWnd.AddEdit(S({ x: "+5", y: "s-3", w: 145 }), parseResult ? "" : entry["hotkey"])
-        customHotkeyWnd.AddLink(S({ x: "+2" }), '<a href="/">?</a>').OnEvent(
-          "Click", (*) {
-            MsgBox(
-              "使用 AHK 格式配置更高级的老板键。会覆盖上方的设置"
-              , "帮助")
-          }
-        )
-        customHotkeyWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
-          if (advancedEdit.Text) {
-            entry["hotkey"] := advancedEdit.Text
-          } else {
-            entry["hotkey"] := ToShorthand(hotkeyObj)
-          }
-          hotkeyButton.Text := EscapeAmpersand(FormatHotkeyShorthand(entry["hotkey"]))
-          customHotkeyWnd.Destroy()
+      customHotkeyWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
+        customHotkeyWnd.Destroy()
         })
-        customHotkeyWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
-          customHotkeyWnd.Destroy()
-        })
-        customHotkeyWnd.Show()
+      customHotkeyWnd.Show()
       })
-      entryCapture := entry["capture"]
-      CAPTURE_MODES := ["自动", "进程+类名", "进程+类名+标题"]
-      captureButton := this.gui.AddButton(S({ x: c3, y: "s", w: w3, r: 1, "-wrap -VScroll": "" }), CAPTURE_MODES[entryCapture["mode"]])
-      captureButton.onEvent("Click", (target, info) {
-        captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "匹配方式")
-        this.subGuis.Push(captureWnd)
-        captureWnd.MarginX := 10
-        captureWnd.MarginY := 10
-        captureWnd.AddText("section", "模式：")
-        modeDropDown := captureWnd.AddDropDownList("ys-3 x+1", CAPTURE_MODES)
-        modeDropDown.Value := entryCapture["mode"]
-        modeDropDown.OnEvent("Change", (gui, info) {
-          _updateAdditionals()
+    entryCapture := entry["capture"]
+    CAPTURE_MODES := ["自动", "进程+类名", "进程+类名+标题"]
+    captureButton := this.gui.AddButton(S({ x: c3, y: "s", w: w3, r: 1, "-wrap -VScroll": "" }), CAPTURE_MODES[entryCapture["mode"]])
+    captureButton.onEvent("Click", (target, info) {
+      captureWnd := Gui("-MinimizeBox -MaximizeBox", "配置" (appSelect.Text == "选择" ? "" : " " appSelect.Text " 的") "匹配方式")
+      this.subGuis.Push(captureWnd)
+      captureWnd.MarginX := 10
+      captureWnd.MarginY := 10
+      captureWnd.AddText("section", "模式：")
+      modeDropDown := captureWnd.AddDropDownList("ys-3 x+1", CAPTURE_MODES)
+      modeDropDown.Value := entryCapture["mode"]
+      modeDropDown.OnEvent("Change", (gui, info) {
+        _updateAdditionals()
         })
-        captureWnd.AddLink(S({ x: "+10", y: "s" }), '<a href="/">?</a>').OnEvent(
-          "Click", (*) {
-            MsgBox(
-              "【自动】无需额外配置，捕捉新出现的有标题非置顶窗口。`n`n"
-              "【进程+类名】更稳定且支持捕捉已存在的窗口。进程与类名可以用吸取工具自动填写。`n`n"
-              "【进程+类名+标题】在前者基础上匹配窗口标题，适合网页应用等情况。`n`n`n"
-              ; "只有【匹配进程,类名,标题】模式不会过滤 置顶/隐藏/系统 窗口。`n`n`n"
-              "进程、类名、标题均为正则表达式，用 .* 表示任意长度的通配。"
-              , "帮助")
-          }
-        )
-        captureWnd.AddText("xs-3 y+10 w210 h1.2 Backgroundb5b5b5")
-        SPY_TEXT_ON := "🧲 吸取中 ..."
-        SPY_TEXT_OFF := "🧲 吸取窗口信息"
-        spyButton := captureWnd.AddButton("section ys+30 xs w100 Center", SPY_TEXT_OFF)
-        isSpying := false
-        spyButton.OnEvent("Click", (gui, info) {
-          if (isSpying) {
+      captureWnd.AddLink(S({ x: "+10", y: "s" }), '<a href="/">?</a>').OnEvent(
+        "Click", (*) {
+          MsgBox(
+            "【自动】无需额外配置，捕捉新出现的有标题非置顶窗口。`n`n"
+            "【进程+类名】更稳定且支持捕捉已存在的窗口。进程与类名可以用吸取工具自动填写。`n`n"
+            "【进程+类名+标题】在前者基础上匹配窗口标题，适合网页应用等情况。`n`n`n"
+            ; "只有【匹配进程,类名,标题】模式不会过滤 置顶/隐藏/系统 窗口。`n`n`n"
+            "进程、类名、标题均为正则表达式，用 .* 表示任意长度的通配。"
+            , "帮助")
+        }
+      )
+      captureWnd.AddText("xs-3 y+10 w210 h1.2 Backgroundb5b5b5")
+      SPY_TEXT_ON := "🧲 吸取中 ..."
+      SPY_TEXT_OFF := "🧲 吸取窗口信息"
+      spyButton := captureWnd.AddButton("section ys+30 xs w100 Center", SPY_TEXT_OFF)
+      isSpying := false
+      spyButton.OnEvent("Click", (gui, info) {
+        if (isSpying) {
+          isSpying := false
+          spyButton.Text := SPY_TEXT_OFF
+          ToolTip()
+        }
+        else {
+          isSpying := true
+          spyButton.Text := SPY_TEXT_ON
+          currentExe := WinGetProcessPath("A")
+            ; OutputDebug("ahk_exe ^(?!\Q" currentExe "\E).*$")
+          SetTimer(() {
+            TimedTip("请点击目标窗口", 5000, 10, 80)
+            newWnd := WinWaitActive("ahk_exe ^(?!\Q" currentExe "\E).*$", , 20)
+            if (!isSpying) {
+              return
+            }
             isSpying := false
             spyButton.Text := SPY_TEXT_OFF
             ToolTip()
-          }
-          else {
-            isSpying := true
-            spyButton.Text := SPY_TEXT_ON
-            currentExe := WinGetProcessPath("A")
-              ; OutputDebug("ahk_exe ^(?!\Q" currentExe "\E).*$")
-            SetTimer(() {
-              TimedTip("请点击目标窗口", 5000, 10, 80)
-              newWnd := WinWaitActive("ahk_exe ^(?!\Q" currentExe "\E).*$", , 20)
-              if (!isSpying) {
-                return
-              }
-              isSpying := false
-              spyButton.Text := SPY_TEXT_OFF
-              ToolTip()
-              if (!newWnd) {
-                MsgBox("窗口吸取失败！")
-              } else {
-                WinActivate(this.gui)
-                WinActivate(captureWnd)
-                titleEdit.Value := "^" EscapeRegex(WinGetTitle(newWnd)) "$"
-                processEdit.Value := "^" EscapeRegex(WinGetProcessPath(newWnd)) "$"
-                classEdit.Value := "^" EscapeRegex(WinGetClass(newWnd)) "$"
-              }
+            if (!newWnd) {
+              MsgBox("窗口吸取失败！")
+            } else {
+              WinActivate(this.gui)
+              WinActivate(captureWnd)
+              titleEdit.Value := "^" EscapeRegex(WinGetTitle(newWnd)) "$"
+              processEdit.Value := "^" EscapeRegex(WinGetProcessPath(newWnd)) "$"
+              classEdit.Value := "^" EscapeRegex(WinGetClass(newWnd)) "$"
+            }
             }, -1)
-          }
-        })
-        processLabel := captureWnd.AddText("xs section", "进程：")
-        processEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["process"])
-        classLabel := captureWnd.AddText("xs section", "类名：")
-        classEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["class"])
-        titleLabel := captureWnd.AddText("xs section", "标题：")
-        titleEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["title"])
-        _updateAdditionals() {
-          spyButton.Enabled := modeDropDown.Value >= 2
-          processLabel.Enabled := modeDropDown.Value >= 2
-          processEdit.Enabled := modeDropDown.Value >= 2
-          classLabel.Enabled := modeDropDown.Value >= 2
-          classEdit.Enabled := modeDropDown.Value >= 2
-          titleLabel.Enabled := modeDropDown.Value >= 3
-          titleEdit.Enabled := modeDropDown.Value >= 3
         }
-        _updateAdditionals()
-        captureWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
-          entryCapture["mode"] := modeDropDown.Value
-          entryCapture["process"] := processEdit.Value
-          entryCapture["class"] := classEdit.Value
-          entryCapture["title"] := titleEdit.Value
-          captureButton.Text := CAPTURE_MODES[entryCapture["mode"]]
-          captureWnd.Destroy()
         })
-        captureWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
-          captureWnd.Destroy()
+      processLabel := captureWnd.AddText("xs section", "进程：")
+      processEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["process"])
+      classLabel := captureWnd.AddText("xs section", "类名：")
+      classEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["class"])
+      titleLabel := captureWnd.AddText("xs section", "标题：")
+      titleEdit := captureWnd.AddEdit("x+1 ys-3 h20 w220", entryCapture["title"])
+      _updateAdditionals() {
+        spyButton.Enabled := modeDropDown.Value >= 2
+        processLabel.Enabled := modeDropDown.Value >= 2
+        processEdit.Enabled := modeDropDown.Value >= 2
+        classLabel.Enabled := modeDropDown.Value >= 2
+        classEdit.Enabled := modeDropDown.Value >= 2
+        titleLabel.Enabled := modeDropDown.Value >= 3
+        titleEdit.Enabled := modeDropDown.Value >= 3
+      }
+      _updateAdditionals()
+      captureWnd.AddButton(S({ x: "s" }), "确定").OnEvent("Click", (gui, info) {
+        entryCapture["mode"] := modeDropDown.Value
+        entryCapture["process"] := processEdit.Value
+        entryCapture["class"] := classEdit.Value
+        entryCapture["title"] := titleEdit.Value
+        captureButton.Text := CAPTURE_MODES[entryCapture["mode"]]
+        captureWnd.Destroy()
         })
-        captureWnd.Show()
+      captureWnd.AddButton(S({ x: "+5" }), "取消").OnEvent("Click", (gui, info) {
+        captureWnd.Destroy()
+        })
+      captureWnd.Show()
       })
-      removeBtn := this.gui.AddButton(S({ x: c4, y: "s" }), "-")
-      removeBtn.OnEvent(
-        "Click", (gui, info) {
-          this.config["shortcuts"].RemoveAt(index)
-          this._refreshGui()
-        })
+    removeBtn := this.gui.AddButton(S({ x: c4, y: "s" }), "-")
+    removeBtn.OnEvent(
+      "Click", (gui, info) {
+        this.config["shortcuts"].RemoveAt(index)
+        this._refreshGui()
+      })
     }
 
   }
@@ -419,7 +419,7 @@ class Configurator {
         checkbox.Value := dataValue
         checkbox.OnEvent("Click", (gui, info) {
           data[dataKey] := gui.Value
-        })
+          })
         return checkbox
       case this.COMPONENT_CLASS.MOD_SELECT:
         modDict := UMap("#", "Win", "^", "Ctrl", "!", "Alt", "+", "Shift")
@@ -438,7 +438,7 @@ class Configurator {
             } else {
               DeleteVal(dataValue, modKey)
             }
-          })
+            })
         }
       case this.COMPONENT_CLASS.SUFFIX_INPUT:
         gui.AddText(styleOpt || "section xs y+15", payload)
@@ -446,7 +446,7 @@ class Configurator {
         edit.onEvent("Change", (gui, info) {
           data[dataKey] := Dedupe(StrSplit(gui.Value))
             ; gui.Value := joinStrs(config[dataKey])
-        })
+          })
       case this.COMPONENT_CLASS.INFO_BOX:
         gui.AddGroupBox(S({ section: "", w: this.guiWidth - 20, r: 2.5, x: 10, y: "+5", c: "111111" }) " " styleOpt)
         gui.AddText(S({ x: "s+5", y: "s+18", c: "333333", w: this.guiWidth - 40 }), payload)
@@ -543,7 +543,7 @@ addHiddenSubmenu(id) {
     hiddenWindowMap[id] := name
     hiddenWindowMenu.Add(name, (name, pos, menu) {
       popWndHandler(id)
-    })
+      })
     updateHiddenSubmenu()
   }
 }
@@ -592,13 +592,13 @@ setupTray() {
   A_TrayMenu.Add("还原窗口", hiddenWindowMenu)
   hiddenWindowMenu.Add("全部还原", (*) {
     clearWndHandlers()
-  })
+    })
   updateHiddenSubmenu()
   A_TrayMenu.Add("退出", (*) {
     ; Have to delete the menu before exiting, other wise it will cause a crash
     A_TrayMenu.Delete()
     ExitApp()
-  })
+    })
 
   OnMessage(0x404, (wParam, lParam, *) {
     ; user left-clicked tray icon
@@ -618,7 +618,7 @@ setupTray() {
     if (lParam = 0x208) {
       return
     }
-  })
+    })
 }
 
 updateTray() {

@@ -69,7 +69,7 @@ LastOf(array) {
 JoinStrs(array, delimiter := "") {
   str := ""
   for index, value in array {
-    str .= (index == 1) ? value : delimiter . value
+    str .= (index == 1) ? String(value) : delimiter . String(value)
   }
   return str
 }
@@ -147,16 +147,16 @@ TimedTip(text, timeout := 1000, x := A_ScreenWidth, y := A_ScreenHeight) {
 }
 
 CallAsync(func, args*) {
-  return SetTimer(() {
-    try {
-      return func.Call(args*)
-    }
-  }, -1)
-  ; return NewThread(
-  ;   "try {`n"
-  ;   func.Name "(" JoinStrs(args, ",") ")`n"
-  ;   "}"
-  ; )
+  ; return SetTimer(() {
+  ; try {
+  ; return func.Call(args*)
+  ; }
+  ; }, -1)
+  return NewThread(
+    "try {`n"
+    func.Name "(" JoinStrs(args, ",") ")`n"
+    "}"
+  )
 }
 
 
@@ -169,18 +169,25 @@ FILTERED_WINDOW_CLASS := [
   "Microsoft.IME.UIManager.CandidateWindow.Host", ;输入法
   "IME", ;输入法
   "MSCTFIME UI",
+  ; "Chrome_WidgetWin_1"
   ; "SysShadow", "Shell_TrayWnd", "IME", "NarratorHelperWindow", "tooltips_class32", "MSCTFIME UI"
   ; "Xaml_WindowedPopupCIass"
 ]
 
 FILTERED_WINDOW_TITLE := [
-  "DesktopWindowXamlSource"
+  "DesktopWindowXamlSource", "小组件"
 ]
 FILTERED_WINDOW_EXE := []
 
-EXE_FILTER := ""
-CLASS_FILTER := "^(?!" JoinStrs(FILTERED_WINDOW_CLASS.Map(EscapeRegex), "|") ").*$"
-TITLE_FILTER := "^(?!" JoinStrs(FILTERED_WINDOW_TITLE.Map(EscapeRegex), "|") ").+$"
+CLASS_FILTER := "^" .
+  (FILTERED_WINDOW_CLASS.Length > 0 ? "(?!" JoinStrs(FILTERED_WINDOW_CLASS.Map(EscapeRegex), "|") ")" : "") .
+  ".+$"
+TITLE_FILTER := "^" .
+  (FILTERED_WINDOW_TITLE.Length > 0 ? "(?!" JoinStrs(FILTERED_WINDOW_TITLE.Map(EscapeRegex), "|") ")" : "") .
+  ".+$"
+EXE_FILTER := "^" .
+  (FILTERED_WINDOW_EXE.Length > 0 ? "(?!" JoinStrs(FILTERED_WINDOW_EXE.Map(EscapeRegex), "|") ")" : "") .
+  ".+$"
 
 
 NotAOT(id) {

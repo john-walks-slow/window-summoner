@@ -16,6 +16,25 @@ config := readConfig()
 hiddenWindowMap := Map()
 hiddenWindowMenu := Menu()
 
+full_command_line := DllCall("GetCommandLine", "str")
+
+restartAsAdmin() {
+  if (config["misc"]["runAsAdmin"]) {
+    if not (A_IsAdmin or RegExMatch(full_command_line, " /restart(?!\S)"))
+    {
+      try
+      {
+        if A_IsCompiled
+          Run '*RunAs "' A_ScriptFullPath '"' JoinStrs(A_Args, " ") ' /restart'
+        else
+          Run '*RunAs "' A_AhkPath '" /restart "' A_ScriptFullPath '"' JoinStrs(A_Args, " ")
+      }
+      ExitApp()
+    }
+  }
+}
+
+restartAsAdmin()
 class Configurator {
   __New() {
     global config
@@ -37,6 +56,7 @@ class Configurator {
       }
       this.subGuis := []
       if (!this.config["misc"]["minimizeToTray"] || !this.isMainRunning) {
+        A_TrayMenu.Delete()
         ExitApp()
       }
       })
@@ -83,6 +103,7 @@ class Configurator {
           this._stopMainScript()
             ; Sleep(100)
           writeConfig(this.config)
+          restartAsAdmin()
           this._startMainScript()
         }
         updateTray()
@@ -462,6 +483,7 @@ class Configurator {
     miscConfig := this.config["misc"]
     this.gui.AddText("section xs ys c676767", "通用")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "开机自启动", miscConfig, "autoStart")
+    this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "以管理员身份运行", miscConfig, "runAsAdmin")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "后台运行", miscConfig, "minimizeToTray")
     this._addComponent(this.COMPONENT_CLASS.CHECKBOX, "后台运行时隐藏托盘图标", miscConfig, "hideTray")
     this.gui.AddLink(S({ x: "+0", y: "s+1" }), '(<a href="/">注意</a>)').OnEvent(

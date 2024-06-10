@@ -27,6 +27,7 @@ CONFIG_DEFAULT := UMap(
   "misc", UMap(
     "autoStart", false,
     "minimizeToTray", true,
+    "runAsAdmin", false,
     "hideTray", false,
     "reuseExistingWindow", true,
     "singleActiveWindow", false,
